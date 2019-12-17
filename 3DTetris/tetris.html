@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <title>3D TetrisL</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+
+      canvas {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script src="three.js"></script>
+    <script>
+
+
+      init();
+      animate();
+
+      // Listen for keyboard events, to react to them.
+      // Note: there are also other event listeners, e.g. for mouse events.
+      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.body.addEventListener(
+        "mousedown",
+        function(event) {
+          event.preventDefault();
+          mouseDown = true;
+          startMouseX = event.clientX;
+          startMouseY = event.clientY;
+          startTheta = theta;
+          startPhi = phi;
+        },
+        false
+      );
+      document.addEventListener(
+        "mouseup",
+        function(event) {
+          event.preventDefault();
+          mouseDown = false;
+          startMouseX = event.clientX - startMouseX;
+          startMouseY = event.clientY - startMouseY;
+        },
+        false
+      );
+
+
+      // Handle keyboard presses.
+      function handleKeyDown(event) {
+        switch (event.keyCode) {
+          case 37: // Left arrow
+          case 38: // Up arrow
+          case 39: // Right arrow
+          case 40: // Down arrow
+
+        }
+      }
+
+      // Control camera orbit
+      function handleMouseMove(event) {
+        if (mouseDown) {
+          theta = -((event.clientX - startMouseX) * 0.5) + startTheta;
+          phi = Math.min(
+            180,
+            Math.max(0, (event.clientY - startMouseY) * 0.5 + startPhi)
+          );
+
+          camera.position.x =
+            radius *
+            Math.sin((theta * Math.PI) / 360) *
+            Math.cos((phi * Math.PI) / 360);
+          camera.position.y = radius * Math.sin((phi * Math.PI) / 360);
+          camera.position.z =
+            radius *
+            Math.cos((theta * Math.PI) / 360) *
+            Math.cos((phi * Math.PI) / 360);
+          camera.lookAt(new THREE.Vector3(0, 0, 0));
+          camera.position.add(translation);
+          camera.updateMatrix();
+        }
+      }
+    </script>
+  </body>
+</html>
