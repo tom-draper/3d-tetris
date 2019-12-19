@@ -25,8 +25,9 @@
       var blocks = [];
       var cubeLen = 1;
       var end = -1;
-      var gameWidth = 10;
-      var gameHeight = 16;
+      var gameWidth = 15;
+      var gameHeight = 22;
+      var gameOver = false;
       var mouseDown = false;
       var startMouseX, startMouseY, mouseX, mouseY;
       startMouseX = mouseX = startMouseY = mouseY = 0;
@@ -35,7 +36,6 @@
       startPhi = phi = 74;
       var radius;
 
-      
       init();
       animate();
 
@@ -76,7 +76,7 @@
         );
         camera.position.set(50, 40, 0);
         //camera.position.set(40, 10, 0);
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
+        camera.lookAt(new THREE.Vector3(0, gameHeight/2, 0));
 
         radius = Math.sqrt(
           Math.pow(camera.position.x, 2) +
@@ -114,6 +114,23 @@
           }
         }
 
+        for (z = -14.5; z <= 14.5; z = z + 29) {
+          for (y = 1; y <= gameHeight * 1.5; y++) {
+            if (y == gameHeight) {
+              lineMaterial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+            }
+            var geometry = new THREE.Geometry();
+            geometry.vertices.push(new THREE.Vector3( -0.5, y, z) );
+            geometry.vertices.push(new THREE.Vector3( 0.5, y, z) );
+            var line = new THREE.Line(geometry, lineMaterial);
+            scene.add(line)
+            if (y == gameHeight) {
+              lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff } );
+            }
+          }
+        }
+
+
         // Add directional lighting to scene.
         var directionalLight = new THREE.DirectionalLight(0xffffffff, 1.2);
         directionalLight.position.x = 10;
@@ -138,20 +155,14 @@
         initialiseGame();
       }
 
+      /* Loops to animate the scene */
       function animate() {
         requestAnimationFrame(animate);
 
-        next = moveDown();
-        if (next) {
-          if (!gameOver()) {
-            random = Math.ceil(Math.random() * 5)
-            switch (random) {
-              case 1:
-                createL();
-              case 2:
-                createLine();
-              case 3:
-                createSquare();
+        if (moveDown()) {
+          updateGameOver()
+          if (!gameOver)  {
+            randomBlock(); // Make new block
           }
         }
         // Render the current scene to the screen.
@@ -159,23 +170,39 @@
         renderer.render(scene, camera);
       }
 
-      function gameOver() {
-        over = false;
-        
+      /* Checks whether the game is over */
+      function updateGameOver() {
         for (i = 0; i < blocks.length; i++) {
           childLen = blocks[i].children.length; 
           for (j = 0; j < childLen; j++) {
             if (blocks[i].children[j].position.y >= gameHeight - cubeLen/2) {
-              over = true;
+              gameOver = true;
             }
           }
         }
+      }
 
-        return over;
+      /* Selects a random block to create */
+      function randomBlock() {
+        random = Math.ceil(Math.random() * 5)
+        switch (random) {
+          case 1:
+            createL();
+            break
+          case 2:
+            createBackwardsL();
+            break
+          case 3:
+            createLine();
+            break
+          case 4:
+            createSquare();
+            break
+        }
       }
 
       function initialiseGame() {
-        createL();
+        randomBlock();
         moveDown();
       }
 
@@ -185,8 +212,6 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       }
-
-
 
 
       /* A basic cube used to create any block */
@@ -210,21 +235,42 @@
 
       /*  1
           2
-          3
-          4 5
+          3 4
       */
       function createL() {
         var block = new THREE.Group();
         var cubes = [];
         var colour = getRandomColour();
-        for (i = 0; i < 5; i++) {
+        for (i = 0; i < 4; i++) {
           cubes.push(createCube(colour));
         }
         cubes[0].position.set(0, gameHeight - cubeLen/2 + cubes.length, 0);
         cubes[1].position.set(0, gameHeight - cubeLen/2 + cubes.length - 1, 0);
         cubes[2].position.set(0, gameHeight - cubeLen/2 + cubes.length - 2, 0);
-        cubes[3].position.set(0, gameHeight - cubeLen/2 + cubes.length - 3, 0);
-        cubes[4].position.set(0, gameHeight - cubeLen/2 + cubes.length - 3, -1);
+        cubes[3].position.set(0, gameHeight - cubeLen/2 + cubes.length - 2, -1);
+        for (i = 0; i < cubes.length; i++) {
+          block.add(cubes[i]);
+        }
+        blocks.push(block);
+        end++;
+        scene.add(block);
+      }
+
+      /*    1
+            2
+          4 3
+      */
+      function createBackwardsL() {
+        var block = new THREE.Group();
+        var cubes = [];
+        var colour = getRandomColour();
+        for (i = 0; i < 4; i++) {
+          cubes.push(createCube(colour));
+        }
+        cubes[0].position.set(0, gameHeight - cubeLen/2 + cubes.length, 0);
+        cubes[1].position.set(0, gameHeight - cubeLen/2 + cubes.length - 1, 0);
+        cubes[2].position.set(0, gameHeight - cubeLen/2 + cubes.length - 2, 0);
+        cubes[3].position.set(0, gameHeight - cubeLen/2 + cubes.length - 2, 1);
         for (i = 0; i < cubes.length; i++) {
           block.add(cubes[i]);
         }
@@ -384,16 +430,18 @@
 
       // Handle keyboard presses.
       function handleKeyDown(event) {
-        switch (event.keyCode) {
-          case 37: // Left arrow
-            moveLeftRight('left');
-            break
-          case 39: // Right arrow
-            moveLeftRight('right');
-            break
-          case 40: // Down arrow
-            moveDown();
-            break
+        if (!gameOver) {
+          switch (event.keyCode) {
+            case 37: // Left arrow
+              moveLeftRight('left');
+              break
+            case 39: // Right arrow
+              moveLeftRight('right');
+              break
+            case 40: // Down arrow
+              moveDown();
+              break
+          }
         }
       }
 
@@ -415,7 +463,7 @@
             radius *
             Math.cos((theta * Math.PI) / 360) *
             Math.cos((phi * Math.PI) / 360);
-          camera.lookAt(new THREE.Vector3(0, 0, 0));
+          camera.lookAt(new THREE.Vector3(0, gameHeight/2, 0));
           camera.updateMatrix();
         }
       }
