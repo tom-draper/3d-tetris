@@ -358,6 +358,7 @@
 
         if (!halt) {
           // With every other block in the blocks list
+          check:
           for (x = 0; x < blocks.length; x++) {
             checkBlock = blocks[x];
             // Check checkBlocks children position against potential position
@@ -367,22 +368,19 @@
               potentialPosition = JSON.parse(JSON.stringify(currentBlock.children[i].position));
               potentialPosition.z = potentialPosition.z + add;
               for (j = 0; j < checkBlock.children.length; j++) {
-                // If positions would be equal, currentBlock cannot move down                
+                // If positions would be equal, currentBlock cannot move across  
                 if (potentialPosition.x == checkBlock.children[j].position.x && potentialPosition.y == checkBlock.children[j].position.y && potentialPosition.z == checkBlock.children[j].position.z) {
-                  halt = true;
-                  break
+                  // Sideways position is already occupied by block
+                  halt = true; 
+                  break check;
                 }
               }
-              if (halt) {
-                break
-              }
-            }
-            if (halt) {
-              break
             }
           }
+        }
 
-          // Move currentBlock one space down
+        // Move currentBlock one space down
+        if (!halt) {
           for (i = 0; i < currentBlock.children.length; i++) {
             currentBlock.children[i].position.z = currentBlock.children[i].position.z + add;
           }
@@ -394,16 +392,18 @@
 
       /* Move the current block down a block */
       function moveDown() {
-        // Check at bottom
         currentBlock = blocks.pop();
         halt = false;
+        // Check if block has hit the floor
         for (i = 0; i < currentBlock.children.length; i++) {
           if (currentBlock.children[i].position.y <= cubeLen/2) {
+            // Block has hit floor
             halt = true
           }
         }
         if (!halt) {
           // With every other block in the blocks list
+          check:
           for (x = 0; x < blocks.length; x++) {
             checkBlock = blocks[x];
             // Check checkBlocks children against currentBlocks children
@@ -414,16 +414,11 @@
               for (j = 0; j < checkBlock.children.length; j++) {
                 // If positions would be equal, currentBlock cannot move down                
                 if (potentialPosition.x == checkBlock.children[j].position.x && potentialPosition.y == checkBlock.children[j].position.y && potentialPosition.z == checkBlock.children[j].position.z) {
+                  // Downwards position is already occupied by block
                   halt = true;
-                  break
+                  break check;
                 }
               }
-              if (halt) {
-                break
-              }
-            }
-            if (halt) {
-              break
             }
           }
         }
