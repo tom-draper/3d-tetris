@@ -124,7 +124,7 @@
         // Handle resizing of the browser window.
         window.addEventListener("resize", handleResize, false);
 
-        createNew();
+        initialiseGame();
       }
 
       function animate() {
@@ -132,12 +132,28 @@
 
         next = moveDown();
         if (next) {
-          createL();
+          if (!gameOver()) {
+            createL();
+          }
         }
-
         // Render the current scene to the screen.
         renderer.clear();
         renderer.render(scene, camera);
+      }
+
+      function gameOver() {
+        over = false;
+        
+        for (i = 0; i < blocks.length; i++) {
+          childLen = blocks[i].children.length; 
+          for (j = 0; j < childLen; j++) {
+            if (blocks[i].children[j].position.y >= gameHeight - cubeLen/2) {
+              over = true;
+            }
+          }
+        }
+
+        return over;
       }
 
       function moveDown() {
@@ -149,20 +165,25 @@
             halt = true
           }
         }
-        // With every other block in the blocks list
-        for (x = 0; x < blocks.length; x++) {
-          checkBlock = blocks[x];
-          // Check checkBlocks children against currentBlocks children
-          for (i = 0; i < currentBlock.children.length; i++) {
-            var potentialPosition = new THREE.Vector3();
-            potentialPosition = currentBlock.children[i].position;
-            potentialPosition.y = potentialPosition.y - 1;
-            for (j = 0; j < checkBlock.children.length; j++) {
-              // If positions would be equal, currentBlock cannot move down
-              console.debug(potentialPosition.x, potentialPosition.y, potentialPosition.z, checkBlock.children[j].position.x, checkBlock.children[j].position.y, checkBlock.children[j].position.z);
-              
-              if (potentialPosition.x == checkBlock.children[j].position.x && potentialPosition.y == checkBlock.children[j].position.y && potentialPosition.z == checkBlock.children[j].position.z) {
-                halt = true;
+        if (!halt) {
+          // With every other block in the blocks list
+          for (x = 0; x < blocks.length; x++) {
+            checkBlock = blocks[x];
+            // Check checkBlocks children against currentBlocks children
+            for (i = 0; i < currentBlock.children.length; i++) {
+              var potentialPosition = new THREE.Vector3();
+              potentialPosition = JSON.parse(JSON.stringify(currentBlock.children[i].position));
+              potentialPosition.y = potentialPosition.y - 1;
+              for (j = 0; j < checkBlock.children.length; j++) {
+                // If positions would be equal, currentBlock cannot move down
+                console.debug(potentialPosition.x, potentialPosition.y, potentialPosition.z, checkBlock.children[j].position.x, checkBlock.children[j].position.y, checkBlock.children[j].position.z);
+                
+                if (potentialPosition.x == checkBlock.children[j].position.x && potentialPosition.y == checkBlock.children[j].position.y && potentialPosition.z == checkBlock.children[j].position.z) {
+                  halt = true;
+                  break
+                }
+              }
+              if (halt) {
                 break
               }
             }
@@ -170,11 +191,8 @@
               break
             }
           }
-          if (halt) {
-            break
-          }
+          console.debug();
         }
-        console.debug();
 
         // Move currentBlock one space down
         if (!halt) {
@@ -186,7 +204,7 @@
         return halt;
       }
 
-      function createNew() {
+      function initialiseGame() {
         createL();
         moveDown();
       }
@@ -228,11 +246,11 @@
         for (i = 0; i < 5; i++) {
           cubes.push(createCube(colour));
         }
-        cubes[0].position.set(0, gameHeight + cubeLen/2, 0);
-        cubes[1].position.set(0, gameHeight + cubeLen/2 - 1, 0);
-        cubes[2].position.set(0, gameHeight + cubeLen/2 - 2, 0);
-        cubes[3].position.set(0, gameHeight + cubeLen/2 - 3, 0);
-        cubes[4].position.set(0, gameHeight + cubeLen/2 - 3, -1);
+        cubes[0].position.set(0, gameHeight - cubeLen/2, 0);
+        cubes[1].position.set(0, gameHeight - cubeLen/2 - 1, 0);
+        cubes[2].position.set(0, gameHeight - cubeLen/2 - 2, 0);
+        cubes[3].position.set(0, gameHeight - cubeLen/2 - 3, 0);
+        cubes[4].position.set(0, gameHeight - cubeLen/2 - 3, -1);
         for (i = 0; i < cubes.length; i++) {
           block.add(cubes[i]);
         }
