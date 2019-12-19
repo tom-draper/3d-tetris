@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>3D TetrisL</title>
+    <title>Tetris 3D</title>
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -26,7 +26,7 @@
       var cubeLen = 1;
       var end = -1;
       var gameWidth = 15;
-      var gameHeight = 22;
+      var gameHeight = 25;
       var gameOver = false;
       var mouseDown = false;
       var startMouseX, startMouseY, mouseX, mouseY;
@@ -67,7 +67,6 @@
 
       function init() {
         scene = new THREE.Scene();
-
         camera = new THREE.PerspectiveCamera(
           45,
           window.innerWidth / window.innerHeight,
@@ -75,7 +74,6 @@
           1000
         );
         camera.position.set(50, 40, 0);
-        //camera.position.set(40, 10, 0);
         camera.lookAt(new THREE.Vector3(0, gameHeight/2, 0));
 
         radius = Math.sqrt(
@@ -93,7 +91,7 @@
           // Create vertical lines
           for (i = -14.5; i <= 14.5; i++) {
             var geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3( x, gameHeight * 1.5, i) );
+            geometry.vertices.push(new THREE.Vector3( x, gameHeight * 1.5 - 0.5, i) );
             geometry.vertices.push(new THREE.Vector3( x, 0, i) );
             var line = new THREE.Line(geometry, lineMaterial);
             scene.add(line)
@@ -113,7 +111,7 @@
             }
           }
         }
-
+        // Join front and back vertical grid with lines along the sides
         for (z = -14.5; z <= 14.5; z = z + 29) {
           for (y = 1; y <= gameHeight * 1.5; y++) {
             if (y == gameHeight) {
@@ -129,7 +127,14 @@
             }
           }
         }
-
+        // Join front and back vertical grid with lines across the top
+        for (z = -13.5; z <= 13.5; z++) {
+          var geometry = new THREE.Geometry();
+          geometry.vertices.push(new THREE.Vector3( -0.5, gameHeight * 1.5 - 0.5, z) );
+          geometry.vertices.push(new THREE.Vector3( 0.5, gameHeight * 1.5 - 0.5, z) );
+          var line = new THREE.Line(geometry, lineMaterial);
+          scene.add(line)
+        }
 
         // Add directional lighting to scene.
         var directionalLight = new THREE.DirectionalLight(0xffffffff, 1.2);
@@ -201,6 +206,7 @@
         }
       }
 
+      /* Initialise the game with the first block */
       function initialiseGame() {
         randomBlock();
         moveDown();
@@ -326,25 +332,30 @@
       }
 
 
-
-
       /* Move the current block either left or right depending on input */
       function moveLeftRight(direction) {
-        add = 0
-        if (direction == 'left') {
-          add = 1
-        } else if (direction == 'right') {
-          add = -1
-        }
-
-        // Check at left edge of game space
         currentBlock = blocks.pop();
         halt = false;
-        for (i = 0; i < currentBlock.children.length; i++) {
-          if (Math.abs(currentBlock.children[i].position.z) >= gameWidth) {
-            halt = true
+
+        add = 0
+        if (direction == 'left') {
+          add = 1 // Used later
+          // Check if at left edge of game space
+          for (i = 0; i < currentBlock.children.length; i++) {
+            if (currentBlock.children[i].position.z >= gameWidth - 1) {
+              halt = true
+            }
+          }
+        } else if (direction == 'right') {
+          add = -1 // Used later
+          // Check at right edge of game space
+          for (i = 0; i < currentBlock.children.length; i++) {
+            if (-currentBlock.children[i].position.z >= gameWidth - 1) {
+              halt = true
+            }
           }
         }
+
         if (!halt) {
           // With every other block in the blocks list
           for (x = 0; x < blocks.length; x++) {
@@ -370,14 +381,13 @@
               break
             }
           }
-        }
 
-        // Move currentBlock one space down
-        if (!halt) {
+          // Move currentBlock one space down
           for (i = 0; i < currentBlock.children.length; i++) {
             currentBlock.children[i].position.z = currentBlock.children[i].position.z + add;
           }
         }
+
         blocks.push(currentBlock);
         return halt;
       }
@@ -444,6 +454,7 @@
           }
         }
       }
+
 
       // Control camera orbit
       function handleMouseMove(event) {
