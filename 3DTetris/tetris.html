@@ -22,9 +22,11 @@
     <script src="three.js"></script>
     <script>
       var scene, camera, radius;
-      var currentBlock;
+      var blocks = [];
+      var cubeLen = 1;
+      var end = -1;
       var gameWidth = 10;
-      var gameHeight = 5;
+      var gameHeight = 16;
       var mouseDown = false;
       var startMouseX, startMouseY, mouseX, mouseY;
       startMouseX = mouseX = startMouseY = mouseY = 0;
@@ -36,7 +38,6 @@
       
       init();
       animate();
-      startGame();
 
       // Listen for keyboard events, to react to them.
       document.addEventListener("keydown", handleKeyDown);
@@ -73,7 +74,8 @@
           0.1,
           1000
         );
-        camera.position.set(40, 30, 0);
+        //camera.position.set(40, 30, 0);
+        camera.position.set(40, 10, 0);
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         radius = Math.sqrt(
@@ -83,7 +85,23 @@
         );
 
         // Draw a helper grid in the x-z plane.
-        scene.add(new THREE.GridHelper(30, 30, 0xffffff));
+        scene.add(new THREE.GridHelper(30, 100, 0xffffff));
+
+        var lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff } );
+        for (i = -15; i <= 15; i++) {
+          var geometry = new THREE.Geometry();
+          geometry.vertices.push(new THREE.Vector3( 0, 20, i) );
+          geometry.vertices.push(new THREE.Vector3( 0, 0, i) );
+          var line = new THREE.Line(geometry, lineMaterial);
+          scene.add(line)
+        }
+        for (i = 0; i <= 20; i++) {
+          var geometry = new THREE.Geometry();
+          geometry.vertices.push(new THREE.Vector3( 0, i, -15) );
+          geometry.vertices.push(new THREE.Vector3( 0, i, 15) );
+          var line = new THREE.Line(geometry, lineMaterial);
+          scene.add(line)
+        }
 
         // Add directional lighting to scene.
         var directionalLight = new THREE.DirectionalLight(0xffffffff, 1.2);
@@ -92,6 +110,9 @@
         directionalLight.position.z = 0;
         directionalLight.intensity = 1.5;
         scene.add(directionalLight);
+        var ambientLight = new THREE.AmbientLight();
+        ambientLight.intensity = 0.2;
+        scene.add(ambientLight);
 
         // Set up the Web GL renderer.
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -102,12 +123,17 @@
 
         // Handle resizing of the browser window.
         window.addEventListener("resize", handleResize, false);
+
+        createNew();
       }
 
       function animate() {
         requestAnimationFrame(animate);
 
-        moveDown();
+        next = moveDown();
+        if (next) {
+          createL();
+        }
 
         // Render the current scene to the screen.
         renderer.clear();
@@ -115,30 +141,79 @@
       }
 
       function moveDown() {
-        setTimeout(() => {
-          if (currentBlock.position.y > 0) {
-            currentBlock.position.y = currentBlock.position.y - 1;
+        // Check at bottom
+        currentBlock = blocks.pop();
+        halt = false;
+        for (i = 0; i < currentBlock.children.length; i++) {
+          if (currentBlock.children[i].position.y <= cubeLen/2) {
+            halt = true
           }
-        }, 1000);
+        }
+        // With every other block in the blocks list
+        for (x = 0; x < blocks.length; x++) {
+          checkBlock = blocks[x];
+          // Check checkBlocks children against currentBlocks children
+          for (i = 0; i < currentBlock.children.length; i++) {
+            var potentialPosition = new THREE.Vector3();
+            potentialPosition = currentBlock.children[i].position;
+            potentialPosition.y = potentialPosition.y - 1;
+            for (j = 0; j < checkBlock.children.length; j++) {
+              // If positions would be equal, currentBlock cannot move down
+              console.debug(potentialPosition.x, potentialPosition.y, potentialPosition.z, checkBlock.children[j].position.x, checkBlock.children[j].position.y, checkBlock.children[j].position.z);
+              
+              if (potentialPosition.x == checkBlock.children[j].position.x && potentialPosition.y == checkBlock.children[j].position.y && potentialPosition.z == checkBlock.children[j].position.z) {
+                halt = true;
+                break
+              }
+            }
+            if (halt) {
+              break
+            }
+          }
+          if (halt) {
+            break
+          }
+        }
+        console.debug();
+
+        // Move currentBlock one space down
+        if (!halt) {
+          for (i = 0; i < currentBlock.children.length; i++) {
+            currentBlock.children[i].position.y = currentBlock.children[i].position.y - 1;
+          }
+        }
+        blocks.push(currentBlock);
+        return halt;
       }
 
-      function startGame() {
+      function createNew() {
         createL();
+        moveDown();
       }
 
-      // Handle resizing of the browser window.
+      /* Handle resizing of the browser window. */
       function handleResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       }
 
-      function createCube() {
-        var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+      /* A basic cube used to create any block */
+      function createCube(colour) {
+        var geometry = new THREE.BoxGeometry(cubeLen, cubeLen, cubeLen);
+        var material = new THREE.MeshPhongMaterial({ color: colour });
         var cube = new THREE.Mesh(geometry, material);
 
         return cube;
+      }
+
+      function getRandomColour() {
+        var letters = '0123456789ABCDEF';
+        var colour = '#';
+        for (var i = 0; i < 6; i++) {
+          colour += letters[Math.floor(Math.random() * 16)];
+        }
+        return colour;
       }
 
       /*  1
@@ -148,22 +223,21 @@
       */
       function createL() {
         var block = new THREE.Group();
-        var cube1 = createCube();
-        var cube2 = createCube();
-        var cube3 = createCube();
-        var cube4 = createCube();
-        var cube5 = createCube();
-        cube1.position.set(0, gameHeight, 0);
-        cube2.position.set(0, gameHeight - 1, 0);
-        cube3.position.set(0, gameHeight - 2, 0);
-        cube4.position.set(0, gameHeight - 3, 0);
-        cube5.position.set(0, gameHeight - 3, -1);
-        block.add(cube1);
-        block.add(cube2);
-        block.add(cube3);
-        block.add(cube4);
-        block.add(cube5);
-        currentBlock = block;
+        var cubes = [];
+        var colour = getRandomColour();
+        for (i = 0; i < 5; i++) {
+          cubes.push(createCube(colour));
+        }
+        cubes[0].position.set(0, gameHeight + cubeLen/2, 0);
+        cubes[1].position.set(0, gameHeight + cubeLen/2 - 1, 0);
+        cubes[2].position.set(0, gameHeight + cubeLen/2 - 2, 0);
+        cubes[3].position.set(0, gameHeight + cubeLen/2 - 3, 0);
+        cubes[4].position.set(0, gameHeight + cubeLen/2 - 3, -1);
+        for (i = 0; i < cubes.length; i++) {
+          block.add(cubes[i]);
+        }
+        blocks.push(block);
+        end++;
         scene.add(block);
       }
 
