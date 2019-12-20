@@ -35,6 +35,7 @@
       startTheta = theta = 180;
       startPhi = phi = 74;
       var radius;
+      var previous;
 
       init();
       animate();
@@ -158,7 +159,16 @@
         window.addEventListener("resize", handleResize, false);
 
         initialiseGame();
-        //startGame();
+      }
+
+      function beenASecond() {
+        var toWait = 500; /* i.e. 1 second */
+        var now = new Date().getTime();
+        if (now > previous + toWait) {
+          previous = now;
+          return true;
+        }
+        return false;
       }
 
       /* Loops to animate the scene */
@@ -166,12 +176,14 @@
         requestAnimationFrame(animate);
 
         if (!gameOver) {
-          if (moveDown()) {
-            updateGameOver()
-            if (!gameOver)  {
-              randomBlock(); // Make new block
-            } else {
-              alert("Game Over!");
+          if (beenASecond()) {
+            if (moveDown()) {
+              updateGameOver()
+              if (!gameOver)  {
+                randomBlock(); // Make new block
+              } else {
+                alert("Game Over!");
+              }
             }
           }
         }
@@ -195,7 +207,7 @@
 
       /* Selects a random block from the Tetris collection */
       function randomBlock() {
-        random = Math.ceil(Math.random() * 5)
+        random = Math.ceil(Math.random() * 7)
         switch (random) {
           case 1:
             createL();
@@ -221,25 +233,13 @@
         }
       }
 
-      /* Initialise the game with the first block */
+      /* Initialise the game with the first block
+         and takes first time recording */
       function initialiseGame() {
         randomBlock(); // Make first block
         moveDown();
+        previous = new Date().getTime();
       }
-
-      /* Main game loop 
-      function startGame() {
-        while (!gameOver) {
-          if (moveDown()) {
-            updateGameOver()
-            if (!gameOver)  {
-              randomBlock(); // Make new block
-            } else {
-              alert("Game Over!");
-            }
-          }
-        }
-      }*/
 
       /* Handle resizing of the browser window. */
       function handleResize() {
