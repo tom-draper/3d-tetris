@@ -158,18 +158,24 @@
         window.addEventListener("resize", handleResize, false);
 
         initialiseGame();
+        //startGame();
       }
 
       /* Loops to animate the scene */
       function animate() {
         requestAnimationFrame(animate);
 
-        if (moveDown()) {
-          updateGameOver()
-          if (!gameOver)  {
-            randomBlock(); // Make new block
+        if (!gameOver) {
+          if (moveDown()) {
+            updateGameOver()
+            if (!gameOver)  {
+              randomBlock(); // Make new block
+            } else {
+              alert("Game Over!");
+            }
           }
         }
+
         // Render the current scene to the screen.
         renderer.clear();
         renderer.render(scene, camera);
@@ -187,7 +193,7 @@
         }
       }
 
-      /* Selects a random block to create */
+      /* Selects a random block from the Tetris collection */
       function randomBlock() {
         random = Math.ceil(Math.random() * 5)
         switch (random) {
@@ -203,14 +209,37 @@
           case 4:
             createSquare();
             break
+          case 5:
+            createS();
+            break
+          case 6:
+            createBackwardsS();
+            break
+          case 7:
+            createT();
+            break
         }
       }
 
       /* Initialise the game with the first block */
       function initialiseGame() {
-        randomBlock();
+        randomBlock(); // Make first block
         moveDown();
       }
+
+      /* Main game loop 
+      function startGame() {
+        while (!gameOver) {
+          if (moveDown()) {
+            updateGameOver()
+            if (!gameOver)  {
+              randomBlock(); // Make new block
+            } else {
+              alert("Game Over!");
+            }
+          }
+        }
+      }*/
 
       /* Handle resizing of the browser window. */
       function handleResize() {
@@ -331,6 +360,75 @@
         scene.add(block);
       }
 
+      /*  1 
+          2 3
+            4
+      */
+      function createS() {
+        var block = new THREE.Group();
+        var cubes = [];
+        var colour = getRandomColour();
+        for (i = 0; i < 4; i++) {
+          cubes.push(createCube(colour));
+        }
+        cubes[0].position.set(0, gameHeight - cubeLen/2 + cubes.length/2, 0);
+        cubes[1].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 1, 0);
+        cubes[2].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 1, -1);
+        cubes[3].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 2, -1);
+        for (i = 0; i < cubes.length; i++) {
+          block.add(cubes[i]);
+        }
+        blocks.push(block);
+        end++;
+        scene.add(block);
+      }
+
+      /*    1 
+          3 2 
+          4  
+      */
+      function createBackwardsS() {
+        var block = new THREE.Group();
+        var cubes = [];
+        var colour = getRandomColour();
+        for (i = 0; i < 4; i++) {
+          cubes.push(createCube(colour));
+        }
+        cubes[0].position.set(0, gameHeight - cubeLen/2 + cubes.length/2, 0);
+        cubes[1].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 1, 0);
+        cubes[2].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 1, 1);
+        cubes[3].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 2, 1);
+        for (i = 0; i < cubes.length; i++) {
+          block.add(cubes[i]);
+        }
+        blocks.push(block);
+        end++;
+        scene.add(block);
+      }
+
+      /*   1 
+         2 3 4 
+            
+      */
+      function createT() {
+        var block = new THREE.Group();
+        var cubes = [];
+        var colour = getRandomColour();
+        for (i = 0; i < 4; i++) {
+          cubes.push(createCube(colour));
+        }
+        cubes[0].position.set(0, gameHeight - cubeLen/2 + cubes.length/2, 0);
+        cubes[1].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 1, 1);
+        cubes[2].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 1, 0);
+        cubes[3].position.set(0, gameHeight - cubeLen/2 + cubes.length/2 - 1, -1);
+        for (i = 0; i < cubes.length; i++) {
+          block.add(cubes[i]);
+        }
+        blocks.push(block);
+        end++;
+        scene.add(block);
+      }
+
 
       /* Move the current block either left or right depending on input */
       function moveLeftRight(direction) {
@@ -389,7 +487,7 @@
         blocks.push(currentBlock);
         return halt;
       }
-
+      
       /* Move the current block down a block */
       function moveDown() {
         currentBlock = blocks.pop();
@@ -429,6 +527,7 @@
             currentBlock.children[i].position.y = currentBlock.children[i].position.y - 1;
           }
         }
+
         blocks.push(currentBlock);
         return halt;
       }
