@@ -22,12 +22,25 @@
     <script src="three.js"></script>
     <script>
       var scene, camera, radius;
-      var blocks = [];
+      var activeBlocks = [];
       var cubeLen = 1;
       var end = -1;
       var gameWidth = 15;
       var gameHeight = 25;
       var gameOver = false;
+      // Block queues
+      var blockQueue = []
+      var c = 0 // Constant to determine added height over the start line
+      var gap = 6 // Gap between future blocks
+      var positionQueue = [new THREE.Vector3(0, gameHeight - cubeLen / 2 + c, 0), 
+        new THREE.Vector3(0, gameHeight - cubeLen / 2 + c, -18), 
+        new THREE.Vector3(0, gameHeight - cubeLen / 2 - gap + c, -18), 
+        new THREE.Vector3(0, gameHeight - cubeLen / 2 - 2 * gap + c, -18)]
+      var sceneQueue = [new THREE.AmbientLight(intensity=1), 
+        new THREE.AmbientLight(intensity=0.7),
+        new THREE.AmbientLight(intensity=0.5),
+        new THREE.AmbientLight(intensity=0.2)]
+      // Controls
       var mouseDown = false;
       var startMouseX, startMouseY, mouseX, mouseY;
       startMouseX = mouseX = startMouseY = mouseY = 0;
@@ -67,7 +80,7 @@
       );
 
       function init() {
-        scene = new THREE.Scene();
+        sceneMain = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(
           45,
           window.innerWidth / window.innerHeight,
@@ -84,7 +97,7 @@
         );
 
         // Draw a helper grid in the x-z plane.
-        scene.add(new THREE.GridHelper(30, 60, 0xffffff));
+        sceneMain.add(new THREE.GridHelper(30, 60, 0xffffff));
 
         // Create vertical grid
         var lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
@@ -97,7 +110,7 @@
             );
             geometry.vertices.push(new THREE.Vector3(x, 0, i));
             var line = new THREE.Line(geometry, lineMaterial);
-            scene.add(line);
+            sceneMain.add(line);
           }
           // Create horizonal lines
           for (i = 0; i <= gameHeight * 1.5; i++) {
@@ -108,7 +121,7 @@
             geometry.vertices.push(new THREE.Vector3(x, i, -14.5));
             geometry.vertices.push(new THREE.Vector3(x, i, 14.5));
             var line = new THREE.Line(geometry, lineMaterial);
-            scene.add(line);
+            sceneMain.add(line);
             if (i == gameHeight) {
               lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
             }
@@ -124,7 +137,7 @@
             geometry.vertices.push(new THREE.Vector3(-0.5, y, z));
             geometry.vertices.push(new THREE.Vector3(0.5, y, z));
             var line = new THREE.Line(geometry, lineMaterial);
-            scene.add(line);
+            sceneMain.add(line);
             if (y == gameHeight) {
               lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
             }
@@ -140,19 +153,43 @@
             new THREE.Vector3(0.5, gameHeight * 1.5 - 0.5, z)
           );
           var line = new THREE.Line(geometry, lineMaterial);
-          scene.add(line);
+          sceneMain.add(line);
         }
 
         // Add directional lighting to scene.
-        var directionalLight = new THREE.DirectionalLight(0xffffffff, 1.2);
+        var directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1.2);
         directionalLight.position.x = 10;
         directionalLight.position.y = 10;
         directionalLight.position.z = 0;
         directionalLight.intensity = 1.5;
-        scene.add(directionalLight);
+        sceneMain.add(directionalLight);
         var ambientLight = new THREE.AmbientLight();
         ambientLight.intensity = 0.2;
-        scene.add(ambientLight);
+        sceneMain.add(ambientLight);
+
+        // Set up queue of scenes for blocks in the queue
+        var intensity1 = 0.8
+        var lighting1 = new THREE.AmbientLight(0xF5F5F5, intensity1);
+        var directional1 = new THREE.DirectionalLight(0xF5F5F5, intensity1);
+        var scene1 = new THREE.Scene();
+        scene1.add(lighting1);
+        scene1.add(directional1);
+        var intensity2 = 0.5
+        var lighting2 = new THREE.AmbientLight(0xF5F5F5, intensity2);
+        var directional2 = new THREE.DirectionalLight(0xF5F5F5, intensity2);
+        var scene2 = new THREE.Scene();
+        scene2.add(lighting2);
+        scene2.add(directional2);
+        var intensity3 = 0.2
+        var lighting3 = new THREE.AmbientLight(0xF5F5F5, intensity3);
+        var directional3 = new THREE.DirectionalLight(0xF5F5F5, intensity3);
+        var scene3 = new THREE.Scene();
+        scene3.add(lighting3);
+        scene3.add(directional3);
+        sceneQueue[0] = sceneMain
+        sceneQueue[1] = scene1
+        sceneQueue[2] = scene2
+        sceneQueue[3] = scene3
 
         // Set up the Web GL renderer.
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -163,15 +200,15 @@
 
         // Handle resizing of the browser window.
         window.addEventListener("resize", handleResize, false);
-
         initialiseGame();
       }
 
+      /* Checks whether it's been a seconds since last called this funciton */
       function beenASecond() {
         var toWait = 500; /* i.e. 1 second */
         var now = new Date().getTime();
         if (now > previous + toWait) {
-          previous = now;
+          previous = now; // Records time to global variable
           return true;
         }
         return false;
@@ -186,7 +223,7 @@
             if (moveDown()) {
               updateGameOver();
               if (!gameOver) {
-                randomBlock(); // Make new block
+                updateQueue();
               } else {
                 alert("Game Over!");
               }
@@ -196,15 +233,17 @@
 
         // Render the current scene to the screen.
         renderer.clear();
-        renderer.render(scene, camera);
+        for (j = 0; j < sceneQueue.length; j++) {
+          renderer.render(sceneQueue[j], camera);
+        }
       }
 
       /* Checks whether the game is over */
       function updateGameOver() {
-        for (i = 0; i < blocks.length; i++) {
-          childLen = blocks[i].children.length;
+        for (i = 0; i < activeBlocks.length - 3; i++) {
+          childLen = activeBlocks[i].children.length;
           for (j = 0; j < childLen; j++) {
-            if (blocks[i].children[j].position.y >= gameHeight - cubeLen / 2) {
+            if (activeBlocks[i].children[j].position.y >= gameHeight - cubeLen / 2) {
               gameOver = true;
             }
           }
@@ -212,37 +251,69 @@
       }
 
       /* Selects a random block from the Tetris collection */
-      function randomBlock() {
+      function randomBlock(startPos) {
         random = Math.ceil(Math.random() * 7);
         switch (random) {
           case 1:
-            createL();
-            break;
+            return createL(startPos);
           case 2:
-            createBackwardsL();
-            break;
+            return createBackwardsL(startPos);
           case 3:
-            createLine();
-            break;
+            return createLine(startPos);
           case 4:
-            createSquare();
-            break;
+            return createSquare(startPos);
           case 5:
-            createS();
-            break;
+            return createS(startPos);
           case 6:
-            createBackwardsS();
-            break;
+            return createBackwardsS(startPos);
           case 7:
-            createT();
-            break;
+            return createT(startPos);
         }
+      }
+
+      // Translates a blocks children to a new position
+      function translateBlock(block, newPos) {
+        // Create translation vector
+        vector = new THREE.Vector3(newPos.x - block.children[0].position.x, newPos.y - block.children[0].position.y, newPos.z - block.children[0].position.z)
+
+        // Translate each cube within the block by the vector
+        for (j = 0; j < block.children.length; j++) {
+          block.children[j].position.x += vector.x;
+          block.children[j].position.y += vector.y;
+          block.children[j].position.z += vector.z;
+        }
+      }
+
+      // Move along each block in the queue
+      function updateQueue() {
+        // Move each block down the queue and change scene
+        for (i = 1; i < positionQueue.length; i++) {
+          sceneQueue[i].remove(blockQueue[i]) // Remove from current scene
+          sceneQueue[i-1].add(blockQueue[i]) // Upgrade to next scene
+          translateBlock(blockQueue[i], new THREE.Vector3(positionQueue[i-1].x, positionQueue[i-1].y, positionQueue[i-1].z));
+          blockQueue[i-1] = blockQueue[i] // Move along in the queue
+        }
+        // Add block at front of queue to active blocks
+        activeBlocks.push(blockQueue[0])
+        // Add a new block to end of queue
+        blockQueue[positionQueue.length - 1] = randomBlock(positionQueue[positionQueue.length -1])
+        sceneQueue[positionQueue.length - 1].add(blockQueue[positionQueue.length - 1])
+      }
+
+      // Create a new random block for each position in the queue
+      function fillQueue() {
+        for (i = 0; i < positionQueue.length; i++) {
+          block = randomBlock(positionQueue[i])
+          sceneQueue[i].add(block) // Add to correct scene
+          blockQueue[i] = block // Add to block queue
+        }
+        activeBlocks.push(blockQueue[0]);
       }
 
       /* Initialise the game with the first block
          and takes first time recording */
       function initialiseGame() {
-        randomBlock(); // Make first block
+        fillQueue();
         moveDown();
         previous = new Date().getTime();
       }
@@ -254,6 +325,10 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       }
 
+
+      // ----------Create blocks---------------
+
+
       /* A basic cube used to create any block */
       function createCube(colour) {
         var geometry = new THREE.BoxGeometry(cubeLen, cubeLen, cubeLen);
@@ -264,84 +339,57 @@
       }
 
       /* Creates and returns a random colour hex code */
-
       function getRandomColour() {
         var letters = "0123456789ABCDEF";
         var colour = "#";
         for (var i = 0; i < 6; i++) {
           colour += letters[Math.floor(Math.random() * 16)];
         }
-        return colour;
+        return colour
       }
 
       /*  1
           2
           3 4
       */
-      function createL() {
+      function createL(startPos) {
         var block = new THREE.Group();
         var cubes = [];
         var colour = getRandomColour();
-        for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
           cubes.push(createCube(colour));
         }
-        cubes[0].position.set(0, gameHeight - cubeLen / 2 + cubes.length, 0);
-        cubes[1].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 1,
-          0
-        );
-        cubes[2].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 2,
-          0
-        );
-        cubes[3].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 2,
-          -1
-        );
-        for (i = 0; i < cubes.length; i++) {
-          block.add(cubes[i]);
+        cubes[0].position.set(startPos.x, startPos.y, startPos.z);
+        cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
+        cubes[2].position.set(startPos.x, startPos.y - 2, startPos.z);
+        cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z - 1);
+        for (k = 0; k < cubes.length; k++) {
+          block.add(cubes[k]);
         }
-        blocks.push(block);
         end++;
-        scene.add(block);
+        return block
       }
 
       /*    1
             2
           4 3
       */
-      function createBackwardsL() {
+      function createBackwardsL(startPos) {
         var block = new THREE.Group();
         var cubes = [];
         var colour = getRandomColour();
-        for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
           cubes.push(createCube(colour));
         }
-        cubes[0].position.set(0, gameHeight - cubeLen / 2 + cubes.length, 0);
-        cubes[1].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 1,
-          0
-        );
-        cubes[2].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 2,
-          0
-        );
-        cubes[3].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 2,
-          1
-        );
-        for (i = 0; i < cubes.length; i++) {
-          block.add(cubes[i]);
+        cubes[0].position.set(startPos.x, startPos.y, startPos.z);
+        cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
+        cubes[2].position.set(startPos.x, startPos.y - 2, startPos.z);
+        cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z - 1);
+        for (k = 0; k < cubes.length; k++) {
+          block.add(cubes[k]);
         }
-        blocks.push(block);
         end++;
-        scene.add(block);
+        return block
       }
 
       /*  1
@@ -349,195 +397,119 @@
           3
           4
       */
-      function createLine() {
+      function createLine(startPos) {
         var block = new THREE.Group();
         var cubes = [];
         var colour = getRandomColour();
-        for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
           cubes.push(createCube(colour));
         }
-        cubes[0].position.set(0, gameHeight - cubeLen / 2 + cubes.length, 0);
-        cubes[1].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 1,
-          0
-        );
-        cubes[2].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 2,
-          0
-        );
-        cubes[3].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length - 3,
-          0
-        );
-        for (i = 0; i < cubes.length; i++) {
-          block.add(cubes[i]);
+        cubes[0].position.set(startPos.x, startPos.y, startPos.z);
+        cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
+        cubes[2].position.set(startPos.x, startPos.y - 2, startPos.z);
+        cubes[3].position.set(startPos.x, startPos.y - 3, startPos.z);
+        for (k = 0; k < cubes.length; k++) {
+          block.add(cubes[k]);
         }
-        blocks.push(block);
         end++;
-        scene.add(block);
+        return block
       }
 
       /*  1 2
           3 4
       */
-      function createSquare() {
+      function createSquare(startPos) {
         var block = new THREE.Group();
         var cubes = [];
         var colour = getRandomColour();
-        for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
           cubes.push(createCube(colour));
         }
-        cubes[0].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2,
-          0
-        );
-        cubes[1].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2,
-          -1
-        );
-        cubes[2].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          0
-        );
-        cubes[3].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          -1
-        );
-        for (i = 0; i < cubes.length; i++) {
-          block.add(cubes[i]);
+        cubes[0].position.set(startPos.x, startPos.y, startPos.z);
+        cubes[1].position.set(startPos.x, startPos.y, startPos.z - 1);
+        cubes[2].position.set(startPos.x, startPos.y - 1, startPos.z);
+        cubes[3].position.set(startPos.x, startPos.y - 1, startPos.z - 1);
+        for (k = 0; k < cubes.length; k++) {
+          block.add(cubes[k]);
         }
-        blocks.push(block);
         end++;
-        scene.add(block);
+        return block
       }
 
       /*  1 
           2 3
             4
       */
-      function createS() {
+      function createS(startPos) {
         var block = new THREE.Group();
         var cubes = [];
         var colour = getRandomColour();
-        for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
           cubes.push(createCube(colour));
         }
-        cubes[0].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2,
-          0
-        );
-        cubes[1].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          0
-        );
-        cubes[2].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          -1
-        );
-        cubes[3].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 2,
-          -1
-        );
-        for (i = 0; i < cubes.length; i++) {
-          block.add(cubes[i]);
+        cubes[0].position.set(startPos.x, startPos.y, startPos.z);
+        cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
+        cubes[2].position.set(startPos.x, startPos.y - 1, startPos.z - 1);
+        cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z - 1);
+        for (k = 0; k < cubes.length; k++) {
+          block.add(cubes[k]);
         }
-        blocks.push(block);
         end++;
-        scene.add(block);
+        return block
       }
 
       /*    1 
           3 2 
           4  
       */
-      function createBackwardsS() {
+      function createBackwardsS(startPos) {
         var block = new THREE.Group();
         var cubes = [];
         var colour = getRandomColour();
-        for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
           cubes.push(createCube(colour));
         }
-        cubes[0].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2,
-          0
-        );
-        cubes[1].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          0
-        );
-        cubes[2].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          1
-        );
-        cubes[3].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 2,
-          1
-        );
-        for (i = 0; i < cubes.length; i++) {
-          block.add(cubes[i]);
+        cubes[0].position.set(startPos.x, startPos.y, startPos.z);
+        cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
+        cubes[2].position.set(startPos.x, startPos.y - 1, startPos.z + 1);
+        cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z + 1);
+        for (k = 0; k < cubes.length; k++) {
+          block.add(cubes[k]);
         }
-        blocks.push(block);
         end++;
-        scene.add(block);
+        return block
       }
 
       /*   1 
          2 3 4 
-            
       */
-      function createT() {
+      function createT(startPos) {
         var block = new THREE.Group();
         var cubes = [];
         var colour = getRandomColour();
-        for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
           cubes.push(createCube(colour));
         }
-        cubes[0].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2,
-          0
-        );
-        cubes[1].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          1
-        );
-        cubes[2].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          0
-        );
-        cubes[3].position.set(
-          0,
-          gameHeight - cubeLen / 2 + cubes.length / 2 - 1,
-          -1
-        );
-        for (i = 0; i < cubes.length; i++) {
-          block.add(cubes[i]);
+        cubes[0].position.set(startPos.x, startPos.y, startPos.z);
+        cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z + 1);
+        cubes[2].position.set(startPos.x, startPos.y - 1, startPos.z);
+        cubes[3].position.set(startPos.x, startPos.y - 1, startPos.z - 1);
+        for (k = 0; k < cubes.length; k++) {
+          block.add(cubes[k]);
         }
-        blocks.push(block);
         end++;
-        scene.add(block);
+        return block
       }
+
+
+
+      // ------------Move block----------------
+
+
 
       /* Move the current block either left or right depending on input */
       function moveLeftRight(direction) {
-        currentBlock = blocks.pop();
+        currentBlock = activeBlocks.pop();
         halt = false;
 
         add = 0;
@@ -561,8 +533,8 @@
 
         if (!halt) {
           // With every other block in the blocks list
-          check: for (x = 0; x < blocks.length; x++) {
-            checkBlock = blocks[x];
+          check: for (x = 0; x < activeBlocks.length; x++) {
+            checkBlock = activeBlocks[x];
             // Check checkBlocks children position against potential position
             // of currentBlocks children
             for (i = 0; i < currentBlock.children.length; i++) {
@@ -595,13 +567,14 @@
           }
         }
 
-        blocks.push(currentBlock); // Push modified block back on stack
-        return halt;
+        activeBlocks.push(currentBlock); // Push modified block back on stack
+
+        return halt; // Return whether hit a wall
       }
 
       /* Move the current block down a block */
       function moveDown() {
-        currentBlock = blocks.pop();
+        currentBlock = activeBlocks.pop();
         halt = false;
         // Check if block has hit the floor
         for (i = 0; i < currentBlock.children.length; i++) {
@@ -610,10 +583,11 @@
             halt = true;
           }
         }
+
         if (!halt) {
           // With every other block in the blocks list
-          check: for (x = 0; x < blocks.length; x++) {
-            checkBlock = blocks[x];
+          check: for (x = 0; x < activeBlocks.length; x++) {
+            checkBlock = activeBlocks[x];
             // Check checkBlocks children against currentBlocks children
             for (i = 0; i < currentBlock.children.length; i++) {
               var potentialPosition = new THREE.Vector3();
@@ -645,9 +619,16 @@
           }
         }
 
-        blocks.push(currentBlock); // Push modified block back on stack
-        return halt;
+        activeBlocks.push(currentBlock); // Push modified block back on stack
+
+        return halt; // Return whether hit the floor
       }
+
+
+
+      // ------------Button controls-------------
+
+
 
       // Handle keyboard presses.
       function handleKeyDown(event) {
