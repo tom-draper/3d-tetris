@@ -25,7 +25,7 @@
       var activeBlocks = [];
       var cubeSize = 1;
       var end = -1;
-      var gameWidth = 15;
+      var gameWidth = 30;
       var gameHeight = 25;
       var gameOver = false;
       // Block queues
@@ -346,8 +346,8 @@
       // ----------Create blocks---------------
 
       /* A basic cube used to create any block */
-      function createCube(colour) {
-        var geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+      function createCube(size, colour) {
+        var geometry = new THREE.BoxGeometry(size, size, size);
         var material = new THREE.MeshPhongMaterial({ color: colour });
         var cube = new THREE.Mesh(geometry, material);
 
@@ -373,7 +373,7 @@
         var cubes = [];
         var colour = getRandomColour();
         for (j = 0; j < 4; j++) {
-          cubes.push(createCube(colour));
+          cubes.push(createCube(cubeSize, colour));
         }
         cubes[0].position.set(startPos.x, startPos.y, startPos.z);
         cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
@@ -395,7 +395,7 @@
         var cubes = [];
         var colour = getRandomColour();
         for (j = 0; j < 4; j++) {
-          cubes.push(createCube(colour));
+          cubes.push(createCube(cubeSize, colour));
         }
         cubes[0].position.set(startPos.x, startPos.y, startPos.z);
         cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
@@ -418,7 +418,7 @@
         var cubes = [];
         var colour = getRandomColour();
         for (j = 0; j < 4; j++) {
-          cubes.push(createCube(colour));
+          cubes.push(createCube(cubeSize, colour));
         }
         cubes[0].position.set(startPos.x, startPos.y, startPos.z);
         cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
@@ -439,7 +439,7 @@
         var cubes = [];
         var colour = getRandomColour();
         for (j = 0; j < 4; j++) {
-          cubes.push(createCube(colour));
+          cubes.push(createCube(cubeSize, colour));
         }
         cubes[0].position.set(startPos.x, startPos.y, startPos.z);
         cubes[1].position.set(startPos.x, startPos.y, startPos.z - 1);
@@ -461,7 +461,7 @@
         var cubes = [];
         var colour = getRandomColour();
         for (j = 0; j < 4; j++) {
-          cubes.push(createCube(colour));
+          cubes.push(createCube(cubeSize, colour));
         }
         cubes[0].position.set(startPos.x, startPos.y, startPos.z);
         cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
@@ -483,7 +483,7 @@
         var cubes = [];
         var colour = getRandomColour();
         for (j = 0; j < 4; j++) {
-          cubes.push(createCube(colour));
+          cubes.push(createCube(cubeSize, colour));
         }
         cubes[0].position.set(startPos.x, startPos.y, startPos.z);
         cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
@@ -504,7 +504,7 @@
         var cubes = [];
         var colour = getRandomColour();
         for (j = 0; j < 4; j++) {
-          cubes.push(createCube(colour));
+          cubes.push(createCube(cubeSize, colour));
         }
         cubes[0].position.set(startPos.x, startPos.y, startPos.z);
         cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z + 1);
@@ -529,7 +529,7 @@
           add = 1; // Used later
           // Check if at left edge of game space
           for (i = 0; i < currentBlock.children.length; i++) {
-            if (currentBlock.children[i].position.z >= gameWidth - 1) {
+            if (currentBlock.children[i].position.z >= gameWidth / 2 - 1) {
               halt = true;
             }
           }
@@ -537,7 +537,7 @@
           add = -1; // Used later
           // Check at right edge of game space
           for (i = 0; i < currentBlock.children.length; i++) {
-            if (-currentBlock.children[i].position.z >= gameWidth - 1) {
+            if (-currentBlock.children[i].position.z >= gameWidth / 2 - 1) {
               halt = true;
             }
           }
