@@ -23,23 +23,27 @@
     <script>
       var scene, camera, radius;
       var activeBlocks = [];
-      var cubeLen = 1;
+      var cubeSize = 1;
       var end = -1;
       var gameWidth = 15;
       var gameHeight = 25;
       var gameOver = false;
       // Block queues
-      var blockQueue = []
-      var c = 0 // Constant to determine added height over the start line
-      var gap = 6 // Gap between future blocks
-      var positionQueue = [new THREE.Vector3(0, gameHeight - cubeLen / 2 + c, 0), 
-        new THREE.Vector3(0, gameHeight - cubeLen / 2 + c, -18), 
-        new THREE.Vector3(0, gameHeight - cubeLen / 2 - gap + c, -18), 
-        new THREE.Vector3(0, gameHeight - cubeLen / 2 - 2 * gap + c, -18)]
-      var sceneQueue = [new THREE.AmbientLight(intensity=1), 
-        new THREE.AmbientLight(intensity=0.7),
-        new THREE.AmbientLight(intensity=0.5),
-        new THREE.AmbientLight(intensity=0.2)]
+      var blockQueue = [];
+      var c = 5; // Added starting height of a block over the finish line
+      var gap = 6; // Gap between future blocks
+      var positionQueue = [
+        new THREE.Vector3(0, gameHeight - cubeSize / 2 + c, 0),
+        new THREE.Vector3(0, gameHeight - cubeSize / 2, -18),
+        new THREE.Vector3(0, gameHeight - cubeSize / 2 - gap, -18),
+        new THREE.Vector3(0, gameHeight - cubeSize / 2 - 2 * gap, -18)
+      ];
+      var sceneQueue = [
+        new THREE.AmbientLight((intensity = 1)),
+        new THREE.AmbientLight((intensity = 0.7)),
+        new THREE.AmbientLight((intensity = 0.5)),
+        new THREE.AmbientLight((intensity = 0.2))
+      ];
       // Controls
       var mouseDown = false;
       var startMouseX, startMouseY, mouseX, mouseY;
@@ -157,7 +161,7 @@
         }
 
         // Add directional lighting to scene.
-        var directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1.2);
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
         directionalLight.position.x = 10;
         directionalLight.position.y = 10;
         directionalLight.position.z = 0;
@@ -168,28 +172,28 @@
         sceneMain.add(ambientLight);
 
         // Set up queue of scenes for blocks in the queue
-        var intensity1 = 0.8
-        var lighting1 = new THREE.AmbientLight(0xF5F5F5, intensity1);
-        var directional1 = new THREE.DirectionalLight(0xF5F5F5, intensity1);
+        var intensity1 = 0.8;
+        var lighting1 = new THREE.AmbientLight(0xf5f5f5, intensity1);
+        var directional1 = new THREE.DirectionalLight(0xf5f5f5, intensity1);
         var scene1 = new THREE.Scene();
         scene1.add(lighting1);
         scene1.add(directional1);
-        var intensity2 = 0.5
-        var lighting2 = new THREE.AmbientLight(0xF5F5F5, intensity2);
-        var directional2 = new THREE.DirectionalLight(0xF5F5F5, intensity2);
+        var intensity2 = 0.5;
+        var lighting2 = new THREE.AmbientLight(0xf5f5f5, intensity2);
+        var directional2 = new THREE.DirectionalLight(0xf5f5f5, intensity2);
         var scene2 = new THREE.Scene();
         scene2.add(lighting2);
         scene2.add(directional2);
-        var intensity3 = 0.2
-        var lighting3 = new THREE.AmbientLight(0xF5F5F5, intensity3);
-        var directional3 = new THREE.DirectionalLight(0xF5F5F5, intensity3);
+        var intensity3 = 0.2;
+        var lighting3 = new THREE.AmbientLight(0xf5f5f5, intensity3);
+        var directional3 = new THREE.DirectionalLight(0xf5f5f5, intensity3);
         var scene3 = new THREE.Scene();
         scene3.add(lighting3);
         scene3.add(directional3);
-        sceneQueue[0] = sceneMain
-        sceneQueue[1] = scene1
-        sceneQueue[2] = scene2
-        sceneQueue[3] = scene3
+        sceneQueue[0] = sceneMain;
+        sceneQueue[1] = scene1;
+        sceneQueue[2] = scene2;
+        sceneQueue[3] = scene3;
 
         // Set up the Web GL renderer.
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -240,14 +244,16 @@
 
       /* Checks whether the game is over */
       function updateGameOver() {
-        for (i = 0; i < activeBlocks.length - 3; i++) {
-          childLen = activeBlocks[i].children.length;
-          for (j = 0; j < childLen; j++) {
-            if (activeBlocks[i].children[j].position.y >= gameHeight - cubeLen / 2) {
-              gameOver = true;
-            }
+        currentBlock = activeBlocks.pop();
+        for (i = 0; i < currentBlock.children.length; i++) {
+          if (
+            currentBlock.children[i].position.y >=
+            gameHeight - cubeSize / 2
+          ) {
+            gameOver = true;
           }
         }
+        activeBlocks.push(currentBlock);
       }
 
       /* Selects a random block from the Tetris collection */
@@ -274,13 +280,14 @@
       // Translates a blocks children to a new position
       function translateBlock(block, newPos) {
         // Create translation vector
-        vector = new THREE.Vector3(newPos.x - block.children[0].position.x, newPos.y - block.children[0].position.y, newPos.z - block.children[0].position.z)
-
+        vector = new THREE.Vector3(
+          newPos.x - block.children[0].position.x,
+          newPos.y - block.children[0].position.y,
+          newPos.z - block.children[0].position.z
+        );
         // Translate each cube within the block by the vector
         for (j = 0; j < block.children.length; j++) {
-          block.children[j].position.x += vector.x;
-          block.children[j].position.y += vector.y;
-          block.children[j].position.z += vector.z;
+          block.children[j].position.add(vector);
         }
       }
 
@@ -288,24 +295,35 @@
       function updateQueue() {
         // Move each block down the queue and change scene
         for (i = 1; i < positionQueue.length; i++) {
-          sceneQueue[i].remove(blockQueue[i]) // Remove from current scene
-          sceneQueue[i-1].add(blockQueue[i]) // Upgrade to next scene
-          translateBlock(blockQueue[i], new THREE.Vector3(positionQueue[i-1].x, positionQueue[i-1].y, positionQueue[i-1].z));
-          blockQueue[i-1] = blockQueue[i] // Move along in the queue
+          sceneQueue[i].remove(blockQueue[i]); // Remove from current scene
+          sceneQueue[i - 1].add(blockQueue[i]); // Upgrade to next scene
+          translateBlock(
+            blockQueue[i],
+            new THREE.Vector3(
+              positionQueue[i - 1].x,
+              positionQueue[i - 1].y,
+              positionQueue[i - 1].z
+            )
+          );
+          blockQueue[i - 1] = blockQueue[i]; // Move along in the queue
         }
         // Add block at front of queue to active blocks
-        activeBlocks.push(blockQueue[0])
+        activeBlocks.push(blockQueue[0]);
         // Add a new block to end of queue
-        blockQueue[positionQueue.length - 1] = randomBlock(positionQueue[positionQueue.length -1])
-        sceneQueue[positionQueue.length - 1].add(blockQueue[positionQueue.length - 1])
+        blockQueue[positionQueue.length - 1] = randomBlock(
+          positionQueue[positionQueue.length - 1]
+        );
+        sceneQueue[positionQueue.length - 1].add(
+          blockQueue[positionQueue.length - 1]
+        );
       }
 
       // Create a new random block for each position in the queue
       function fillQueue() {
         for (i = 0; i < positionQueue.length; i++) {
-          block = randomBlock(positionQueue[i])
-          sceneQueue[i].add(block) // Add to correct scene
-          blockQueue[i] = block // Add to block queue
+          block = randomBlock(positionQueue[i]);
+          sceneQueue[i].add(block); // Add to correct scene
+          blockQueue[i] = block; // Add to block queue
         }
         activeBlocks.push(blockQueue[0]);
       }
@@ -325,13 +343,11 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       }
 
-
       // ----------Create blocks---------------
-
 
       /* A basic cube used to create any block */
       function createCube(colour) {
-        var geometry = new THREE.BoxGeometry(cubeLen, cubeLen, cubeLen);
+        var geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
         var material = new THREE.MeshPhongMaterial({ color: colour });
         var cube = new THREE.Mesh(geometry, material);
 
@@ -345,7 +361,7 @@
         for (var i = 0; i < 6; i++) {
           colour += letters[Math.floor(Math.random() * 16)];
         }
-        return colour
+        return colour;
       }
 
       /*  1
@@ -367,7 +383,7 @@
           block.add(cubes[k]);
         }
         end++;
-        return block
+        return block;
       }
 
       /*    1
@@ -389,7 +405,7 @@
           block.add(cubes[k]);
         }
         end++;
-        return block
+        return block;
       }
 
       /*  1
@@ -412,7 +428,7 @@
           block.add(cubes[k]);
         }
         end++;
-        return block
+        return block;
       }
 
       /*  1 2
@@ -433,7 +449,7 @@
           block.add(cubes[k]);
         }
         end++;
-        return block
+        return block;
       }
 
       /*  1 
@@ -455,7 +471,7 @@
           block.add(cubes[k]);
         }
         end++;
-        return block
+        return block;
       }
 
       /*    1 
@@ -477,7 +493,7 @@
           block.add(cubes[k]);
         }
         end++;
-        return block
+        return block;
       }
 
       /*   1 
@@ -498,14 +514,10 @@
           block.add(cubes[k]);
         }
         end++;
-        return block
+        return block;
       }
 
-
-
       // ------------Move block----------------
-
-
 
       /* Move the current block either left or right depending on input */
       function moveLeftRight(direction) {
@@ -538,17 +550,17 @@
             // Check checkBlocks children position against potential position
             // of currentBlocks children
             for (i = 0; i < currentBlock.children.length; i++) {
-              var potentialPosition = new THREE.Vector3();
-              potentialPosition = JSON.parse(
+              var newPosition = new THREE.Vector3();
+              newPosition = JSON.parse(
                 JSON.stringify(currentBlock.children[i].position)
               );
-              potentialPosition.z = potentialPosition.z + add;
+              newPosition.z = newPosition.z + add;
               for (j = 0; j < checkBlock.children.length; j++) {
                 // If positions would be equal, currentBlock cannot move across
                 if (
-                  potentialPosition.x == checkBlock.children[j].position.x &&
-                  potentialPosition.y == checkBlock.children[j].position.y &&
-                  potentialPosition.z == checkBlock.children[j].position.z
+                  newPosition.x == checkBlock.children[j].position.x &&
+                  newPosition.y == checkBlock.children[j].position.y &&
+                  newPosition.z == checkBlock.children[j].position.z
                 ) {
                   // Sideways position is already occupied by block
                   halt = true;
@@ -578,7 +590,7 @@
         halt = false;
         // Check if block has hit the floor
         for (i = 0; i < currentBlock.children.length; i++) {
-          if (currentBlock.children[i].position.y <= cubeLen / 2) {
+          if (currentBlock.children[i].position.y <= cubeSize / 2) {
             // Block has hit floor
             halt = true;
           }
@@ -590,17 +602,17 @@
             checkBlock = activeBlocks[x];
             // Check checkBlocks children against currentBlocks children
             for (i = 0; i < currentBlock.children.length; i++) {
-              var potentialPosition = new THREE.Vector3();
-              potentialPosition = JSON.parse(
+              var newPosition = new THREE.Vector3();
+              newPosition = JSON.parse(
                 JSON.stringify(currentBlock.children[i].position)
               );
-              potentialPosition.y = potentialPosition.y - 1;
+              newPosition.y = newPosition.y - 1;
               for (j = 0; j < checkBlock.children.length; j++) {
                 // If positions would be equal, currentBlock cannot move down
                 if (
-                  potentialPosition.x == checkBlock.children[j].position.x &&
-                  potentialPosition.y == checkBlock.children[j].position.y &&
-                  potentialPosition.z == checkBlock.children[j].position.z
+                  newPosition.x == checkBlock.children[j].position.x &&
+                  newPosition.y == checkBlock.children[j].position.y &&
+                  newPosition.z == checkBlock.children[j].position.z
                 ) {
                   // Downwards position is already occupied by block
                   halt = true;
@@ -624,11 +636,7 @@
         return halt; // Return whether hit the floor
       }
 
-
-
       // ------------Button controls-------------
-
-
 
       // Handle keyboard presses.
       function handleKeyDown(event) {
