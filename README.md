@@ -1,17 +1,15 @@
 # 3D-Tetris
-
-## Educational Project  
+ 
 After a University coursework involving the use of the Three.js library, I wanted to consolidate the information I had learned and extend my knowledge of Javascript and Three.js.
 
 #### Project Aims:
-- Create a working, 3D game of Tetris.
-- Consolidate knowledge of Javascript and Three.js.
-- Expand knowledge of Javascript and Three.js.
+- Create a working, 3D game of Tetris
+- Expand and consolidate knowledge of Javascript and Three.js
 
 #### What I Learned:
-- Vector translations in Javascript.
-- Queue structures in Javascript.
-- Use of multiple scenes using different lighting in Three.js 
+- Vector translations in Javascript
+- Queue structures in Javascript
+- Use of multiple scenes using different lighting in Three.js
 
 -------------------------------------------------------
 
