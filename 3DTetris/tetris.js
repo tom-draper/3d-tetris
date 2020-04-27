@@ -1,7 +1,6 @@
 var scene, camera, radius;
 var activeBlocks = [];
 var cubeSize = 1;
-var end = -1;
 var gameWidth = 30;
 var gameHeight = 25;
 var gameOver = false;
@@ -308,7 +307,7 @@ function fillQueue() {
 function initialiseGame() {
   fillQueue();
   moveDown();
-  previous = new Date().getTime();
+  previous = new Date().getTime(); //Record starting time for beenASecond func
 }
 
 /* Handle resizing of the browser window. */
@@ -358,7 +357,6 @@ function createL(startPos) {
   for (k = 0; k < cubes.length; k++) {
     block.add(cubes[k]);
   }
-  end++;
   return block;
 }
 
@@ -379,8 +377,7 @@ function createBackwardsL(startPos) {
   cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z - 1);
   for (k = 0; k < cubes.length; k++) {
     block.add(cubes[k]);
-  }
-  end++;
+  };
   return block;
 }
 
@@ -403,7 +400,6 @@ function createLine(startPos) {
   for (k = 0; k < cubes.length; k++) {
     block.add(cubes[k]);
   }
-  end++;
   return block;
 }
 
@@ -424,7 +420,6 @@ function createSquare(startPos) {
   for (k = 0; k < cubes.length; k++) {
     block.add(cubes[k]);
   }
-  end++;
   return block;
 }
 
@@ -446,7 +441,6 @@ function createS(startPos) {
   for (k = 0; k < cubes.length; k++) {
     block.add(cubes[k]);
   }
-  end++;
   return block;
 }
 
@@ -468,7 +462,6 @@ function createBackwardsS(startPos) {
   for (k = 0; k < cubes.length; k++) {
     block.add(cubes[k]);
   }
-  end++;
   return block;
 }
 
@@ -489,7 +482,6 @@ function createT(startPos) {
   for (k = 0; k < cubes.length; k++) {
     block.add(cubes[k]);
   }
-  end++;
   return block;
 }
 
@@ -609,8 +601,14 @@ function moveDown() {
   }
 
   activeBlocks.push(currentBlock); // Push modified block back on stack
-
   return halt; // Return whether hit the floor
+}
+
+function rotateBlock() {
+  currentBlock = activeBlocks.pop();
+
+  console.log(currentBlock);
+  activeBlocks.push(currentBlock); // Push modified block back on stack
 }
 
 
@@ -628,6 +626,9 @@ function handleKeyDown(event) {
         break;
       case 40: // Down arrow
         moveDown();
+        break;
+      case 82: // R
+        rotateBlock();
         break;
     }
   }
