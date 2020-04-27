@@ -5,9 +5,9 @@ var end = -1;
 var gameWidth = 30;
 var gameHeight = 25;
 var gameOver = false;
-// Block queues
+// Queue for the next blocks
 var blockQueue = [];
-var c = 5; // Added starting height of a block over the finish line
+var c = 5;   // Added starting height of a block over the finish line
 var gap = 6; // Gap between future blocks
 var positionQueue = [
   new THREE.Vector3(0, gameHeight - cubeSize / 2 + c, 0),
@@ -142,25 +142,32 @@ function init() {
   ambientLight.intensity = 0.2;
   sceneMain.add(ambientLight);
 
-  // Set up queue of scenes for blocks in the queue
+  // Create a queue of scenes with different lighting for blocks in the queue
+  // Scene 1 - high intensity lighting, for block in the front of the queue
+  var scene1 = new THREE.Scene();
   var intensity1 = 0.8;
   var lighting1 = new THREE.AmbientLight(0xf5f5f5, intensity1);
   var directional1 = new THREE.DirectionalLight(0xf5f5f5, intensity1);
-  var scene1 = new THREE.Scene();
   scene1.add(lighting1);
   scene1.add(directional1);
+
+  // Scene 2 - medium intensity lighting, for block second in the queue
+  var scene2 = new THREE.Scene();
   var intensity2 = 0.5;
   var lighting2 = new THREE.AmbientLight(0xf5f5f5, intensity2);
   var directional2 = new THREE.DirectionalLight(0xf5f5f5, intensity2);
-  var scene2 = new THREE.Scene();
   scene2.add(lighting2);
   scene2.add(directional2);
+
+  // Scene 3 - low intensity lighting, for block third in the queue
+  var scene3 = new THREE.Scene();
   var intensity3 = 0.2;
   var lighting3 = new THREE.AmbientLight(0xf5f5f5, intensity3);
   var directional3 = new THREE.DirectionalLight(0xf5f5f5, intensity3);
-  var scene3 = new THREE.Scene();
   scene3.add(lighting3);
   scene3.add(directional3);
+
+  // Add scenes to scene queue
   sceneQueue[0] = sceneMain;
   sceneQueue[1] = scene1;
   sceneQueue[2] = scene2;
@@ -259,7 +266,7 @@ function translateBlock(block, newPos) {
   }
 }
 
-// Move along each block in the queue
+/* Move along each block in the queue */
 function updateQueue() {
   // Move each block down the queue and change scene
   for (i = 1; i < positionQueue.length; i++) {
@@ -286,7 +293,7 @@ function updateQueue() {
   );
 }
 
-// Create a new random block for each position in the queue
+/* Create a new random block for each position in the queue */
 function fillQueue() {
   for (i = 0; i < positionQueue.length; i++) {
     block = randomBlock(positionQueue[i]);
@@ -310,6 +317,7 @@ function handleResize() {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
+
 
 // ----------Create blocks---------------
 
@@ -485,6 +493,7 @@ function createT(startPos) {
   return block;
 }
 
+
 // ------------Move block----------------
 
 /* Move the current block either left or right depending on input */
@@ -604,9 +613,10 @@ function moveDown() {
   return halt; // Return whether hit the floor
 }
 
+
 // ------------Button controls-------------
 
-// Handle keyboard presses.
+/* Handle keyboard presses */
 function handleKeyDown(event) {
   if (!gameOver) {
     switch (event.keyCode) {
@@ -623,7 +633,7 @@ function handleKeyDown(event) {
   }
 }
 
-// Control camera orbit
+/* Control camera orbit */
 function handleMouseMove(event) {
   if (mouseDown) {
     theta = -((event.clientX - startMouseX) * 0.5) + startTheta;
