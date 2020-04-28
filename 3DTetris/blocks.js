@@ -17,46 +17,61 @@ function getRandomColour() {
   return colour;
 }
 
-/*  1
-    2
-    3 4
-*/
-function createL(startPos) {
+const L1 = [[0, 0], [-1, 0], [-2, 0], [-2, -1]]
+//const L2 =
+//const L3 =
+//const L4 =
+
+const backwardsL1 = [[0, 0], [-1, 0], [-2, 0], [-2, 1]]
+
+const line1 = [[0, 0], [-1, 0], [-2, 0], [-3, 0]]
+
+const square1 = [[0, 0], [0, -1], [-1, 0], [-1, -1]]
+
+const S1 = [[0, 0], [-1, 0], [-1, -1], [-2, -1]]
+
+const backwardsS1 = [[0, 0], [-1, 0], [-1, 1], [-2, 1]]
+
+const T1 = [[0, 0], [-1, 1], [-1, 0], [-1, -1]]
+
+
+function createBlock(startPos, shapePos) {
   var block = new THREE.Group();
   var cubes = [];
   var colour = getRandomColour();
-  for (j = 0; j < 4; j++) {
+
+  for (j = 0; j < shapePos.length; j++) {
     cubes.push(createCube(cubeSize, colour));
+
+    // Set position using shape positions
+    cubes[j].position.set(
+      startPos.x, 
+      startPos.y + shapePos[j][0], 
+      startPos.z + shapePos[j][1]);
   }
-  cubes[0].position.set(startPos.x, startPos.y, startPos.z);
-  cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
-  cubes[2].position.set(startPos.x, startPos.y - 2, startPos.z);
-  cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z - 1);
+
+  // Group the cubes together into a single block to return
   for (k = 0; k < cubes.length; k++) {
     block.add(cubes[k]);
   }
   return block;
 }
 
+/*  1
+    2
+    3 4
+*/
+function createL1(startPos) {
+  return createBlock(startPos, L1)
+}
+
+
 /*    1
       2
     4 3
 */
-function createBackwardsL(startPos) {
-  var block = new THREE.Group();
-  var cubes = [];
-  var colour = getRandomColour();
-  for (j = 0; j < 4; j++) {
-    cubes.push(createCube(cubeSize, colour));
-  }
-  cubes[0].position.set(startPos.x, startPos.y, startPos.z);
-  cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
-  cubes[2].position.set(startPos.x, startPos.y - 2, startPos.z);
-  cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z - 1);
-  for (k = 0; k < cubes.length; k++) {
-    block.add(cubes[k]);
-  };
-  return block;
+function createBackwardsL1(startPos) {
+  return createBlock(startPos, backwardsL1);
 }
 
 /*  1
@@ -64,103 +79,38 @@ function createBackwardsL(startPos) {
     3
     4
 */
-function createLine(startPos) {
-  var block = new THREE.Group();
-  var cubes = [];
-  var colour = getRandomColour();
-  for (j = 0; j < 4; j++) {
-    cubes.push(createCube(cubeSize, colour));
-  }
-  cubes[0].position.set(startPos.x, startPos.y, startPos.z);
-  cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
-  cubes[2].position.set(startPos.x, startPos.y - 2, startPos.z);
-  cubes[3].position.set(startPos.x, startPos.y - 3, startPos.z);
-  for (k = 0; k < cubes.length; k++) {
-    block.add(cubes[k]);
-  }
-  return block;
+function createLine1(startPos) {
+  return createBlock(startPos, line1);
 }
 
 /*  1 2
     3 4
 */
-function createSquare(startPos) {
-  var block = new THREE.Group();
-  var cubes = [];
-  var colour = getRandomColour();
-  for (j = 0; j < 4; j++) {
-    cubes.push(createCube(cubeSize, colour));
-  }
-  cubes[0].position.set(startPos.x, startPos.y, startPos.z);
-  cubes[1].position.set(startPos.x, startPos.y, startPos.z - 1);
-  cubes[2].position.set(startPos.x, startPos.y - 1, startPos.z);
-  cubes[3].position.set(startPos.x, startPos.y - 1, startPos.z - 1);
-  for (k = 0; k < cubes.length; k++) {
-    block.add(cubes[k]);
-  }
-  return block;
+function createSquare1(startPos) {
+  return createBlock(startPos, square1);
 }
 
 /*  1 
     2 3
       4
 */
-function createS(startPos) {
-  var block = new THREE.Group();
-  var cubes = [];
-  var colour = getRandomColour();
-  for (j = 0; j < 4; j++) {
-    cubes.push(createCube(cubeSize, colour));
-  }
-  cubes[0].position.set(startPos.x, startPos.y, startPos.z);
-  cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
-  cubes[2].position.set(startPos.x, startPos.y - 1, startPos.z - 1);
-  cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z - 1);
-  for (k = 0; k < cubes.length; k++) {
-    block.add(cubes[k]);
-  }
-  return block;
+function createS1(startPos) {
+  return createBlock(startPos, S1);
 }
 
 /*    1 
     3 2 
     4  
 */
-function createBackwardsS(startPos) {
-  var block = new THREE.Group();
-  var cubes = [];
-  var colour = getRandomColour();
-  for (j = 0; j < 4; j++) {
-    cubes.push(createCube(cubeSize, colour));
-  }
-  cubes[0].position.set(startPos.x, startPos.y, startPos.z);
-  cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z);
-  cubes[2].position.set(startPos.x, startPos.y - 1, startPos.z + 1);
-  cubes[3].position.set(startPos.x, startPos.y - 2, startPos.z + 1);
-  for (k = 0; k < cubes.length; k++) {
-    block.add(cubes[k]);
-  }
-  return block;
+function createBackwardsS1(startPos) {
+  return createBlock(startPos, backwardsS1);
 }
 
 /*    1 
     2 3 4 
 */
-function createT(startPos) {
-  var block = new THREE.Group();
-  var cubes = [];
-  var colour = getRandomColour();
-  for (j = 0; j < 4; j++) {
-    cubes.push(createCube(cubeSize, colour));
-  }
-  cubes[0].position.set(startPos.x, startPos.y, startPos.z);
-  cubes[1].position.set(startPos.x, startPos.y - 1, startPos.z + 1);
-  cubes[2].position.set(startPos.x, startPos.y - 1, startPos.z);
-  cubes[3].position.set(startPos.x, startPos.y - 1, startPos.z - 1);
-  for (k = 0; k < cubes.length; k++) {
-    block.add(cubes[k]);
-  }
-  return block;
+function createT1(startPos) {
+  return createBlock(startPos, T1);
 }
 
 /* Selects a random block from the Tetris collection */
@@ -168,18 +118,18 @@ function randomBlock(startPos) {
   random = Math.ceil(Math.random() * 7);
   switch (random) {
     case 1:
-      return createL(startPos);
+      return createL1(startPos);
     case 2:
-      return createBackwardsL(startPos);
+      return createBackwardsL1(startPos);
     case 3:
-      return createLine(startPos);
+      return createLine1(startPos);
     case 4:
-      return createSquare(startPos);
+      return createSquare1(startPos);
     case 5:
-      return createS(startPos);
+      return createS1(startPos);
     case 6:
-      return createBackwardsS(startPos);
+      return createBackwardsS1(startPos);
     case 7:
-      return createT(startPos);
+      return createT1(startPos);
   }
 }
