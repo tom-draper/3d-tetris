@@ -17,22 +17,109 @@ function getRandomColour() {
   return colour;
 }
 
-const L1 = [[0, 0], [-1, 0], [-2, 0], [-2, -1]]
-//const L2 =
-//const L3 =
-//const L4 =
+/* Pairs of (y, x) values to be added to the first cubes coordinates to create 
+   the coordinates of a new cube in the block.
+   Cube 1 found in the centre of the block as it is the centre point and so the 
+   rotation point. */
 
-const backwardsL1 = [[0, 0], [-1, 0], [-2, 0], [-2, 1]]
+/*  2
+    1
+    3 4
+*/
+const L1 = [[0, 0], [1, 0], [-1, 0], [-1, -1]]
+/* Clockwise rotations */
+/*  3 1 2
+    4 
+*/
+const L2 = [[0, 0], [0, -1], [0, 1], [-1, 1]]
+/*  4 3
+      1
+      2
+*/
+const L3 = [[0, 0], [-1, 0], [1, 0], [1, 1]]
+/*      4
+    2 1 3
+*/
+const L4 = [[0, 0], [0, -1], [1, 0], [1, 1]]
 
-const line1 = [[0, 0], [-1, 0], [-2, 0], [-3, 0]]
 
+/*    2
+      1
+    4 3
+*/
+const bkwdsL1 = [[0, 0], [1, 0], [-1, 0], [-1, 1]]
+/* Clockwise rotations */
+/*  4
+    3 1 2
+*/
+const bkwdsL2 = [[0, 0], [0, -1], [0, 1], [1, 1]]
+/*  3 4
+    1
+    2
+*/
+const bkwdsL3 = [[0, 0], [1, 0], [-2, 0], [-2, 1]]
+/*  2 1 3
+        4
+*/
+const bkwdsL4 = [[0, 0], [0, 1], [0, -1], [-1, -1]]
+
+
+/*  2
+    1
+    3
+    4
+*/
+const line1 = [[0, 0], [1, 0], [-1, 0], [-2, 0]]
+/*  2 1 3 4
+*/
+const line2 = [[0, 0], [0, 1], [0, -1], [0, -2]]
+
+
+/*  1 2
+    3 4
+*/
 const square1 = [[0, 0], [0, -1], [-1, 0], [-1, -1]]
 
+
+/*  2
+    1 3
+      4
+*/
 const S1 = [[0, 0], [-1, 0], [-1, -1], [-2, -1]]
+/*    1 2
+    4 3
+*/
+const S2 = [[0, 0], [0, -1], [-1, 0], [-1, 1]]
 
-const backwardsS1 = [[0, 0], [-1, 0], [-1, 1], [-2, 1]]
 
+/*    2 
+    3 1 
+    4  
+*/
+const bkwdsS1 = [[0, 0], [-1, 0], [-1, 1], [-2, 1]]
+/*  4 3
+      1 2
+*/
+const bkwdsS2 = [[0, 0], [0, -1], [1, 0], [1, 1]]
+
+/*    3 
+    2 1 4 
+*/
 const T1 = [[0, 0], [-1, 1], [-1, 0], [-1, -1]]
+/*  2 
+    1 3
+    4 
+*/
+const T2 = [[0, 0], [1, 0], [0, -1], [-1, 0]]
+/*  4 1 2
+      3 
+*/
+const T3 = [[0, 0], [0, -1], [-1, 0], [0, 1]]
+/*    4
+    3 1
+      2
+*/
+const T4 = [[0, 0], [-1, 0], [0, 1], [1, 0]]
 
 
 function createBlock(startPos, shapePos) {
@@ -57,8 +144,8 @@ function createBlock(startPos, shapePos) {
   return block;
 }
 
-/*  1
-    2
+/*  2
+    1
     3 4
 */
 function createL1(startPos) {
@@ -66,16 +153,16 @@ function createL1(startPos) {
 }
 
 
-/*    1
-      2
+/*    2
+      1
     4 3
 */
-function createBackwardsL1(startPos) {
-  return createBlock(startPos, backwardsL1);
+function createBkwdsL1(startPos) {
+  return createBlock(startPos, bkwdsL1);
 }
 
-/*  1
-    2
+/*  2
+    1
     3
     4
 */
@@ -90,24 +177,24 @@ function createSquare1(startPos) {
   return createBlock(startPos, square1);
 }
 
-/*  1 
-    2 3
+/*  2 
+    1 3
       4
 */
 function createS1(startPos) {
   return createBlock(startPos, S1);
 }
 
-/*    1 
-    3 2 
+/*    2 
+    3 1 
     4  
 */
-function createBackwardsS1(startPos) {
-  return createBlock(startPos, backwardsS1);
+function createBkwdsS1(startPos) {
+  return createBlock(startPos, bkwdsS1);
 }
 
-/*    1 
-    2 3 4 
+/*    3 
+    2 1 4 
 */
 function createT1(startPos) {
   return createBlock(startPos, T1);
@@ -120,7 +207,7 @@ function randomBlock(startPos) {
     case 1:
       return createL1(startPos);
     case 2:
-      return createBackwardsL1(startPos);
+      return createBkwdsL1(startPos);
     case 3:
       return createLine1(startPos);
     case 4:
@@ -128,7 +215,7 @@ function randomBlock(startPos) {
     case 5:
       return createS1(startPos);
     case 6:
-      return createBackwardsS1(startPos);
+      return createBkwdsS1(startPos);
     case 7:
       return createT1(startPos);
   }
