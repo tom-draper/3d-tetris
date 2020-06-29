@@ -1,3 +1,5 @@
+/* A class extending THREE.Group adding instructions to build a tetris block and
+   the ability to cycle through different orinentations of blocks */
 
 class Block extends THREE.Group {
   constructor(pos, orientations) {
@@ -9,6 +11,7 @@ class Block extends THREE.Group {
     this.current = this.buildCurrent();  // A Group object of cubes
   }
 
+  /* Rotates the current block clockwise */
   rotate() {
     // Cycle through to the next orientation index
     if (this.index >= this.orientations.length - 1) {
@@ -22,6 +25,26 @@ class Block extends THREE.Group {
     this.current = this.buildCurrent(colour);
   }
 
+  /* A basic cube used to create any block */
+  createCube(size, colour) {
+    var geometry = new THREE.BoxGeometry(size, size, size);
+    var material = new THREE.MeshPhongMaterial({ color: colour });
+    var cube = new THREE.Mesh(geometry, material);
+
+    return cube;
+  }
+
+  /* Creates and returns a random colour hex code */
+  getRandomColour() {
+    var letters = "0123456789ABCDEF";
+    var colour = "#";
+    for (var i = 0; i < 6; i++) {
+      colour += letters[Math.floor(Math.random() * 16)];
+    }
+    return colour;
+  }
+
+  /* Builds the current block using current index and optional colour */
   buildCurrent(colour) {
     var cubes = [];
 
@@ -51,11 +74,14 @@ class Block extends THREE.Group {
     return block;
   }
 
+  /* Updates the class position of the first cube in the current block
+     as well as positions of all children cubes in the current block */
   updatePos(newPos) {
-    this.pos = newPos;
+    this.pos = newPos;  // Update class position
 
     var shape = this.orientations[this.index];
   
+    // Update position of children cubes
     // Each shape is a list of coordinates for each cube in block
     for (var i = 0; i < shape.length; i++) {
       // Set new position of cube using shape positions
