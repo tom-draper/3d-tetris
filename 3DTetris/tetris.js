@@ -248,27 +248,22 @@ function translateBlock(block, newPos) {
 function updateQueue() {
   // Move each block down the queue and change scene
   for (i = 1; i < positionQueue.length; i++) {
-    sceneQueue[i].remove(blockQueue[i]); // Remove from current scene
-    sceneQueue[i - 1].add(blockQueue[i]); // Upgrade to next scene
-    translateBlock(
-      blockQueue[i],
-      new THREE.Vector3(
-        positionQueue[i - 1].x,
-        positionQueue[i - 1].y,
-        positionQueue[i - 1].z
-      )
-    );
+    sceneQueue[i].remove(blockQueue[i].current); // Remove from current scene
+    sceneQueue[i - 1].add(blockQueue[i].current); // Upgrade to next scene
+    blockQueue[i].updatePos(new THREE.Vector3(positionQueue[i - 1].x,
+                                              positionQueue[i - 1].y,
+                                              positionQueue[i - 1].z));
+    //translateBlock(blockQueue[i], new THREE.Vector3(positionQueue[i - 1].x,
+    //                                                positionQueue[i - 1].y,
+    //                                                positionQueue[i - 1].z));
     blockQueue[i - 1] = blockQueue[i]; // Move along in the queue
   }
   // Add block at front of queue to active blocks
   activeBlocks.push(blockQueue[0]);
   // Add a new block to end of queue
-  blockQueue[positionQueue.length - 1] = randomBlock(
-    positionQueue[positionQueue.length - 1]
-  );
-  sceneQueue[positionQueue.length - 1].add(
-    blockQueue[positionQueue.length - 1]
-  );
+  var newBlock = randomBlock(positionQueue[positionQueue.length - 1])
+  blockQueue[positionQueue.length - 1] = newBlock
+  sceneQueue[positionQueue.length - 1].add(newBlock.current);
 }
 
 /* Create a new random block for each position in the queue */
@@ -413,35 +408,12 @@ function moveDown() {
 
 function rotateBlock() {
   currentBlock = activeBlocks.pop();
-
   // Remove current block from the main scene
   sceneQueue[0].remove(currentBlock.current);
-
   currentBlock.rotate()
+  // Add rotated block back to queues
   activeBlocks.push(currentBlock);
   sceneQueue[0].add(currentBlock.current) 
-
-  // currentPos = new THREE.Vector3(
-  //   currentBlock.children[0].position.x,
-  //   currentBlock.children[0].position.y,
-  //   currentBlock.children[0].position.z);
-  // origin = new THREE.Vector3(0, 0, 0);
-
-  // // Perform rotation
-  // for (var i = 0; i < currentBlock.children.length; i++) {
-  //   currentBlock.children[i].position.x -= currentPos.x
-  //   currentBlock.children[i].position.y -= currentPos.y
-  //   currentBlock.children[i].position.z -= currentPos.z
-  // }
-  // currentBlock.rotation.x += 0.5 * Math.PI;
-  // for (var i = 0; i < currentBlock.children.length; i++) {
-  //   currentBlock.children[i].position.x += currentPos.x
-  //   currentBlock.children[i].position.y += currentPos.y
-  //   currentBlock.children[i].position.z 
-  // }
-
-  // console.log(currentBlock);
-  // activeBlocks.push(currentBlock); // Push modified block back on stack
 }
 
 
