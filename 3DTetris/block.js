@@ -50,14 +50,14 @@ class Block extends THREE.Group {
 
     // If no colour given, get random colour
     if (typeof colour == "undefined") { 
-      colour = getRandomColour();
+      colour = this.getRandomColour();
     }
 
     var shape = this.orientations[this.index];
   
     // Each shape is a list of coordinates for each cube in block
     for (var j = 0; j < shape.length; j++) {
-      cubes.push(createCube(cubeSize, colour));
+      cubes.push(this.createCube(cubeSize, colour));
 
       // Set position of cube using shape positions
       cubes[j].position.set(

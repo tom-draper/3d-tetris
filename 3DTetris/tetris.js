@@ -223,7 +223,7 @@ function animate() {
 function updateGameOver() {
   currentBlock = activeBlocks.pop();
   // Check over all children of the current block to see if any exceed the game height
-  for (i = 0; i < currentBlock.children.length; i++) {
+  for (i = 0; i < currentBlock.current.children.length; i++) {
     if (currentBlock.current.children[i].position.y >= gameHeight - cubeSize / 2) {
       gameOver = true;
     }
@@ -321,22 +321,22 @@ function moveLeftRight(direction) {
 
   if (!halt) {
     // With every other block in the blocks list
-    check: for (x = 0; x < activeBlocks.length; x++) {
-      checkBlock = activeBlocks[x];
+    check: for (i = 0; i < activeBlocks.length; i++) {
+      checkBlock = activeBlocks[i];
       // Check checkBlocks children position against potential position
       // of currentBlocks children
-      for (i = 0; i < currentBlock.children.length; i++) {
+      for (j = 0; j < currentBlock.current.children.length; j++) {
         var newPosition = new THREE.Vector3();
         newPosition = JSON.parse(
-          JSON.stringify(currentBlock.children[i].position)
+          JSON.stringify(currentBlock.current.children[j].position)
         );
         newPosition.z = newPosition.z + add;
-        for (j = 0; j < checkBlock.children.length; j++) {
+        for (k = 0; k < checkBlock.current.children.length; k++) {
           // If positions would be equal, currentBlock cannot move across
           if (
-            newPosition.x == checkBlock.children[j].position.x &&
-            newPosition.y == checkBlock.children[j].position.y &&
-            newPosition.z == checkBlock.children[j].position.z
+            newPosition.x == checkBlock.current.children[k].position.x &&
+            newPosition.y == checkBlock.current.children[k].position.y &&
+            newPosition.z == checkBlock.current.children[k].position.z
           ) {
             // Sideways position is already occupied by block
             halt = true;
@@ -372,21 +372,21 @@ function moveDown() {
 
   if (!halt) {
     // With every other block in the blocks list
-    check: for (x = 0; x < activeBlocks.length; x++) {
-      checkBlock = activeBlocks[x];
+    check: for (i = 0; i < activeBlocks.length; i++) {
+      checkBlock = activeBlocks[i];
       // Check checkBlocks children against currentBlocks children
-      for (i = 0; i < currentBlock.current.children.length; i++) {
+      for (j = 0; j < currentBlock.current.children.length; j++) {
         var newPosition = new THREE.Vector3();
         newPosition = JSON.parse(
-          JSON.stringify(currentBlock.current.children[i].position)
+          JSON.stringify(currentBlock.current.children[j].position)
         );
         newPosition.y = newPosition.y - 1;
-        for (j = 0; j < checkBlock.current.children.length; j++) {
+        for (k = 0; k < checkBlock.current.children.length; k++) {
           // If positions would be equal, currentBlock cannot move down
           if (
-            newPosition.x == checkBlock.current.children[j].position.x &&
-            newPosition.y == checkBlock.current.children[j].position.y &&
-            newPosition.z == checkBlock.current.children[j].position.z
+            newPosition.x == checkBlock.current.children[k].position.x &&
+            newPosition.y == checkBlock.current.children[k].position.y &&
+            newPosition.z == checkBlock.current.children[k].position.z
           ) {
             // Downwards position is already occupied by block
             halt = true;
