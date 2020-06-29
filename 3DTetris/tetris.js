@@ -222,8 +222,9 @@ function animate() {
 /* Checks whether the game is over */
 function updateGameOver() {
   currentBlock = activeBlocks.pop();
+  // Check over all children of the current block to see if any exceed the game height
   for (i = 0; i < currentBlock.children.length; i++) {
-    if (currentBlock.children[i].position.y >= gameHeight - cubeSize / 2) {
+    if (currentBlock.current.children[i].position.y >= gameHeight - cubeSize / 2) {
       gameOver = true;
     }
   }

@@ -2,19 +2,22 @@
 class Block extends THREE.Group {
   constructor(pos, orientations) {
     super();
+    // List of lists of (x,y) coordinates, describing a block for each orientation
     this.orientations = orientations;
-    this.pos = pos;
-    this.index = 0;
-    this.current = this.buildCurrent();
+    this.pos = pos;  // The position of the first cube in the current block
+    this.index = 0;  // The index of the current orientation in use
+    this.current = this.buildCurrent();  // A Group object of cubes
   }
 
   rotate() {
+    // Cycle through to the next orientation index
     if (this.index >= this.orientations.length - 1) {
       this.index = 0;
     } else {
       this.index++;
     }
 
+    // Build new current block of the same colour
     var colour = this.current.children[0].material.color
     this.current = this.buildCurrent(colour);
   }
@@ -62,5 +65,4 @@ class Block extends THREE.Group {
         this.pos.z + shape[i][1]);
     }
   }
-
 }
