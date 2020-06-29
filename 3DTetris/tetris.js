@@ -275,7 +275,7 @@ function updateQueue() {
 function fillQueue() {
   for (i = 0; i < positionQueue.length; i++) {
     block = randomBlock(positionQueue[i]);
-    sceneQueue[i].add(block); // Add to correct scene
+    sceneQueue[i].add(block.current); // Add to correct scene
     blockQueue[i] = block; // Add to block queue
   }
   activeBlocks.push(blockQueue[0]);
@@ -308,16 +308,16 @@ function moveLeftRight(direction) {
   if (direction == "left") {
     add = 1; // Used later
     // Check if at left edge of game space
-    for (i = 0; i < currentBlock.children.length; i++) {
-      if (currentBlock.children[i].position.z >= gameWidth / 2 - 1) {
+    for (i = 0; i < currentBlock.current.children.length; i++) {
+      if (currentBlock.current.children[i].position.z >= gameWidth / 2 - 1) {
         halt = true;
       }
     }
   } else if (direction == "right") {
     add = -1; // Used later
     // Check at right edge of game space
-    for (i = 0; i < currentBlock.children.length; i++) {
-      if (-currentBlock.children[i].position.z >= gameWidth / 2 - 1) {
+    for (i = 0; i < currentBlock.current.children.length; i++) {
+      if (-currentBlock.current.children[i].position.z >= gameWidth / 2 - 1) {
         halt = true;
       }
     }
@@ -353,10 +353,8 @@ function moveLeftRight(direction) {
 
   // Move currentBlock one space down
   if (!halt) {
-    for (i = 0; i < currentBlock.children.length; i++) {
-      currentBlock.children[i].position.z =
-        currentBlock.children[i].position.z + add;
-    }
+    // Update all children position to move one across
+    currentBlock.updatePos(new THREE.Vector3(currentBlock.pos.x, currentBlock.pos.y, currentBlock.pos.z + add))
   }
 
   activeBlocks.push(currentBlock); // Push modified block back on stack
@@ -369,8 +367,8 @@ function moveDown() {
   currentBlock = activeBlocks.pop();
   halt = false;
   // Check if block has hit the floor
-  for (i = 0; i < currentBlock.children.length; i++) {
-    if (currentBlock.children[i].position.y <= cubeSize / 2) {
+  for (i = 0; i < currentBlock.current.children.length; i++) {
+    if (currentBlock.current.children[i].position.y <= cubeSize / 2) {
       // Block has hit floor
       halt = true;
     }
@@ -381,18 +379,18 @@ function moveDown() {
     check: for (x = 0; x < activeBlocks.length; x++) {
       checkBlock = activeBlocks[x];
       // Check checkBlocks children against currentBlocks children
-      for (i = 0; i < currentBlock.children.length; i++) {
+      for (i = 0; i < currentBlock.current.children.length; i++) {
         var newPosition = new THREE.Vector3();
         newPosition = JSON.parse(
-          JSON.stringify(currentBlock.children[i].position)
+          JSON.stringify(currentBlock.current.children[i].position)
         );
         newPosition.y = newPosition.y - 1;
-        for (j = 0; j < checkBlock.children.length; j++) {
+        for (j = 0; j < checkBlock.current.children.length; j++) {
           // If positions would be equal, currentBlock cannot move down
           if (
-            newPosition.x == checkBlock.children[j].position.x &&
-            newPosition.y == checkBlock.children[j].position.y &&
-            newPosition.z == checkBlock.children[j].position.z
+            newPosition.x == checkBlock.current.children[j].position.x &&
+            newPosition.y == checkBlock.current.children[j].position.y &&
+            newPosition.z == checkBlock.current.children[j].position.z
           ) {
             // Downwards position is already occupied by block
             halt = true;
@@ -403,41 +401,47 @@ function moveDown() {
     }
   }
 
-  // Move currentBlock one space down
   if (!halt) {
-    for (i = 0; i < currentBlock.children.length; i++) {
-      currentBlock.children[i].position.y =
-        currentBlock.children[i].position.y - 1;
-    }
+    // Update all children position to move down one space
+    currentBlock.updatePos(new THREE.Vector3(currentBlock.pos.x, currentBlock.pos.y - 1, currentBlock.pos.z))
   }
 
-  activeBlocks.push(currentBlock); // Push modified block back on stack
+  activeBlocks.push(currentBlock);
+   // Push modified block back on stack
   return halt; // Return whether hit the floor
 }
 
 function rotateBlock() {
   currentBlock = activeBlocks.pop();
-  currentPos = new THREE.Vector3(
-    currentBlock.children[0].position.x,
-    currentBlock.children[0].position.y,
-    currentBlock.children[0].position.z);
-  origin = new THREE.Vector3(0, 0, 0);
 
-  // Perform rotation
-  for (var i = 0; i < currentBlock.children.length; i++) {
-    currentBlock.children[i].position.x -= currentPos.x
-    currentBlock.children[i].position.y -= currentPos.y
-    currentBlock.children[i].position.z -= currentPos.z
-  }
-  currentBlock.rotation.x += 0.5 * Math.PI;
-  for (var i = 0; i < currentBlock.children.length; i++) {
-    currentBlock.children[i].position.x += currentPos.x
-    currentBlock.children[i].position.y += currentPos.y
-    currentBlock.children[i].position.z 
-  }
+  // Remove current block from the main scene
+  sceneQueue[0].remove(currentBlock.current);
 
-  console.log(currentBlock);
-  activeBlocks.push(currentBlock); // Push modified block back on stack
+  currentBlock.rotate()
+  activeBlocks.push(currentBlock);
+  sceneQueue[0].add(currentBlock.current) 
+
+  // currentPos = new THREE.Vector3(
+  //   currentBlock.children[0].position.x,
+  //   currentBlock.children[0].position.y,
+  //   currentBlock.children[0].position.z);
+  // origin = new THREE.Vector3(0, 0, 0);
+
+  // // Perform rotation
+  // for (var i = 0; i < currentBlock.children.length; i++) {
+  //   currentBlock.children[i].position.x -= currentPos.x
+  //   currentBlock.children[i].position.y -= currentPos.y
+  //   currentBlock.children[i].position.z -= currentPos.z
+  // }
+  // currentBlock.rotation.x += 0.5 * Math.PI;
+  // for (var i = 0; i < currentBlock.children.length; i++) {
+  //   currentBlock.children[i].position.x += currentPos.x
+  //   currentBlock.children[i].position.y += currentPos.y
+  //   currentBlock.children[i].position.z 
+  // }
+
+  // console.log(currentBlock);
+  // activeBlocks.push(currentBlock); // Push modified block back on stack
 }
 
 

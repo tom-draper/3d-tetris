@@ -40,7 +40,7 @@ const L3 = [[0, 0], [-1, 0], [1, 0], [1, 1]]
 /*      4
     2 1 3
 */
-const L4 = [[0, 0], [0, -1], [1, 0], [1, 1]]
+const L4 = [[0, 0], [0, -1], [0, 1], [1, 1]]
 
 
 /*    2
@@ -61,7 +61,7 @@ const bkwdsL3 = [[0, 0], [1, 0], [-2, 0], [-2, 1]]
 /*  2 1 3
         4
 */
-const bkwdsL4 = [[0, 0], [0, 1], [0, -1], [-1, -1]]
+const bkwdsL4 = [[0, 0], [0, -1], [0, 1], [-1, -1]]
 
 
 /*  2
@@ -106,7 +106,7 @@ const bkwdsS2 = [[0, 0], [0, -1], [1, 0], [1, 1]]
     2 1 4 
 */
 const T1 = [[0, 0], [-1, 1], [-1, 0], [-1, -1]]
-/*  2 
+/*  2 r
     1 3
     4 
 */
@@ -122,43 +122,71 @@ const T3 = [[0, 0], [0, -1], [-1, 0], [0, 1]]
 const T4 = [[0, 0], [-1, 0], [0, 1], [1, 0]]
 
 
-function createBlock(startPos, shapePos) {
-  var block = new THREE.Group();
-  var cubes = [];
-  var colour = getRandomColour();
+// function createBlock(startPos, shapePos) {
+//   var block = new block();
+//   var cubes = [];
+//   var colour = getRandomColour();
 
-  for (j = 0; j < shapePos.length; j++) {
-    cubes.push(createCube(cubeSize, colour));
+//   for (j = 0; j < shapePos.length; j++) {
+//     cubes.push(createCube(cubeSize, colour));
 
-    // Set position using shape positions
-    cubes[j].position.set(
-      startPos.x, 
-      startPos.y + shapePos[j][0], 
-      startPos.z + shapePos[j][1]);
-  }
+//     // Set position using shape positions
+//     cubes[j].position.set(
+//       startPos.x, 
+//       startPos.y + shapePos[j][0], 
+//       startPos.z + shapePos[j][1]);
+//   }
 
-  // Group the cubes together into a single block to return
-  for (k = 0; k < cubes.length; k++) {
-    block.add(cubes[k]);
-  }
-  return block;
-}
+//   // Group the cubes together into a single block to return
+//   for (k = 0; k < cubes.length; k++) {
+//     block.add(cubes[k]);
+//   }
+//   return block;
+// }
+
+// function createBlock(startPos, orientations) {
+//   var cubes = [];
+//   var colour = getRandomColour();
+
+//   for (shape in orientations) {
+//     // Each shape is a list of coordinates for each cube in block
+//     for (j = 0; j < shape.length; j++) {
+//       cubes.push(createCube(cubeSize, colour));
+
+//       // Set position of cube using shape positions
+//       cubes[j].position.set(
+//         startPos.x, 
+//         startPos.y + shape[j][0], 
+//         startPos.z + shape[j][1]);
+//     }
+//     b.add
+//   } 
+
+//   var block = new Block();
+//   // Group the cubes together into a single block to return
+//   for (k = 0; k < cubes.length; k++) {
+//     block.add(cubes[k]);
+//   }
+//   return block;
+// }
+
+
+
 
 /*  2
     1
     3 4
 */
-function createL1(startPos) {
-  return createBlock(startPos, L1)
+function createL(startPos) {
+  return new Block(startPos, [L1, L2, L3, L4])
 }
-
 
 /*    2
       1
     4 3
 */
-function createBkwdsL1(startPos) {
-  return createBlock(startPos, bkwdsL1);
+function createBkwdsL(startPos) {
+  return new Block(startPos, [bkwdsL1, bkwdsL2, bkwdsL3, bkwdsL4]);
 }
 
 /*  2
@@ -166,38 +194,38 @@ function createBkwdsL1(startPos) {
     3
     4
 */
-function createLine1(startPos) {
-  return createBlock(startPos, line1);
+function createLine(startPos) {
+  return new Block(startPos, [line1, line2]);
 }
 
 /*  1 2
     3 4
 */
-function createSquare1(startPos) {
-  return createBlock(startPos, square1);
+function createSquare(startPos) {
+  return new Block(startPos, [square1]);
 }
 
 /*  2 
     1 3
       4
 */
-function createS1(startPos) {
-  return createBlock(startPos, S1);
+function createS(startPos) {
+  return new Block(startPos, [S1, S2]);
 }
 
 /*    2 
     3 1 
     4  
 */
-function createBkwdsS1(startPos) {
-  return createBlock(startPos, bkwdsS1);
+function createBkwdsS(startPos) {
+  return new Block(startPos, [bkwdsS1, bkwdsS2]);
 }
 
 /*    3 
     2 1 4 
 */
-function createT1(startPos) {
-  return createBlock(startPos, T1);
+function createT(startPos) {
+  return new Block(startPos, [T1, T2, T3, T4]);
 }
 
 /* Selects a random block from the Tetris collection */
@@ -205,18 +233,120 @@ function randomBlock(startPos) {
   random = Math.ceil(Math.random() * 7);
   switch (random) {
     case 1:
-      return createL1(startPos);
+      return createL(startPos);
     case 2:
-      return createBkwdsL1(startPos);
+      return createBkwdsL(startPos);
     case 3:
-      return createLine1(startPos);
+      return createLine(startPos);
     case 4:
-      return createSquare1(startPos);
+      return createSquare(startPos);
     case 5:
-      return createS1(startPos);
+      return createS(startPos);
     case 6:
-      return createBkwdsS1(startPos);
+      return createBkwdsS(startPos);
     case 7:
-      return createT1(startPos);
+      return createT(startPos);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// /*  2
+//     1
+//     3 4
+// */
+// function createL1(startPos) {
+//   return createBlock(startPos, L1)
+// }
+
+
+// /*    2
+//       1
+//     4 3
+// */
+// function createBkwdsL1(startPos) {
+//   return createBlock(startPos, bkwdsL1);
+// }
+
+// /*  2
+//     1
+//     3
+//     4
+// */
+// function createLine1(startPos) {
+//   return createBlock(startPos, line1);
+// }
+
+// /*  1 2
+//     3 4
+// */
+// function createSquare1(startPos) {
+//   return createBlock(startPos, square1);
+// }
+
+// /*  2 
+//     1 3
+//       4
+// */
+// function createS1(startPos) {
+//   return createBlock(startPos, S1);
+// }
+
+// /*    2 
+//     3 1 
+//     4  
+// */
+// function createBkwdsS1(startPos) {
+//   return createBlock(startPos, bkwdsS1);
+// }
+
+// /*    3 
+//     2 1 4 
+// */
+// function createT1(startPos) {
+//   return createBlock(startPos, T1);
+// }
+
+// /* Selects a random block from the Tetris collection */
+// function randomBlock(startPos) {
+//   random = Math.ceil(Math.random() * 7);
+//   switch (random) {
+//     case 1:
+//       return createL1(startPos);
+//     case 2:
+//       return createBkwdsL1(startPos);
+//     case 3:
+//       return createLine1(startPos);
+//     case 4:
+//       return createSquare1(startPos);
+//     case 5:
+//       return createS1(startPos);
+//     case 6:
+//       return createBkwdsS1(startPos);
+//     case 7:
+//       return createT1(startPos);
+//   }
+// }
