@@ -25,6 +25,6 @@ Run the tetris.html file to play in a browser.
 - The next three blocks are displayed along the side of the game area.
 - The game finishes when a block settles at or above the red finish line.
 
-### How it Works
+## How it Works
 The tetris blocks are build from groups of smaller cubes. They are added to a scene with multiple lighting effects. Every seconds, the cubes a block is composed of have their y-axis position lowered by 1. When a block reaches the floor or another block, and cannot lower any further, the queue of blocks is updates and the next block is translated to the starting position.
 
