@@ -1,9 +1,9 @@
 # 3D-Tetris
  
-After a University coursework involving the use of the Three.js library, I wanted to consolidate the information I had learned and extend my knowledge of Javascript and Three.js.
+After a University coursework involving the use of the Three.js library. As this was my first time using JavaScript, I wanted to consolidate my what I'd learned and extend my experience of Javascript and Three.js.
 
 #### Project Aims:
-- Create a working, 3D game of Tetris
+- Create a working (and fun) 3D game of Tetris
 - Expand and consolidate knowledge of Javascript and Three.js
 
 #### What I Learned:
