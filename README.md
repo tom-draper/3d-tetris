@@ -11,6 +11,8 @@ After a University coursework involving the use of the Three.js library. As this
 - Queue structures in Javascript
 - Use of multiple scenes using different lighting in Three.js
 
+![3D-tetris](https://user-images.githubusercontent.com/41476809/143850911-6bbd3d80-8bcb-4c73-8df4-74d1f438a291.png)
+
 -------------------------------------------------------
 
 ## Getting Started
