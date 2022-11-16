@@ -16,7 +16,7 @@ After a University coursework involving the use of the Three.js library. As this
 -------------------------------------------------------
 
 ## Getting Started
-Run the tetris.html file to play in a browser.
+Run the index.html file to play in a browser.
 
 ### How to Play
 - Use the arrow keys to move the tetris block left, right and down.
