@@ -90,7 +90,7 @@ function init() {
       var line = new THREE.Line(geometry, lineMaterial);
       sceneMain.add(line);
     }
-    // Create horizonal lines
+    // Create horizontal lines
     for (i = 0; i <= gameHeight * 1.5; i++) {
       var geometry = new THREE.Geometry();
       if (i == gameHeight) {
@@ -181,10 +181,10 @@ function init() {
 
   // Handle resizing of the browser window.
   window.addEventListener("resize", handleResize, false);
-  initialiseGame();
+  initGame();
 }
 
-/* Checks whether it's been a seconds since last called this funciton */
+/* Checks whether it's been a seconds since last called this function */
 function beenASecond() {
   var toWait = 500; /* i.e. 1 second */
   var now = new Date().getTime();
@@ -279,7 +279,7 @@ function fillQueue() {
 
 /* Initialise the game with the first block
     and takes first time recording */
-function initialiseGame() {
+function initGame() {
   fillQueue();
   moveDown();
   previous = new Date().getTime(); //Record starting time for beenASecond func
