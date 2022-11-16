@@ -1,6 +1,6 @@
 # 3D-Tetris
  
-After a University coursework involving the use of the Three.js library. As this was my first time using JavaScript, I wanted to consolidate my what I'd learned and extend my experience of Javascript and Three.js.
+After a University coursework involving the use of the Three.js library. As this was my first time using JavaScript, I wanted to consolidate my what I had learned and extend my experience with Javascript and Three.js.
 
 #### Project Aims:
 - Create a working (and fun) 3D game of Tetris
@@ -16,7 +16,7 @@ After a University coursework involving the use of the Three.js library. As this
 -------------------------------------------------------
 
 ## Getting Started
-Run the index.html file to play in a browser.
+Run the `index.html` file to play in a browser.
 
 ### How to Play
 - Use the arrow keys to move the tetris block left, right and down.
@@ -29,4 +29,3 @@ Run the index.html file to play in a browser.
 
 ## How it Works
 The tetris blocks are build from groups of smaller cubes. They are added to a scene with multiple lighting effects. Every seconds, the cubes a block is composed of have their y-axis position lowered by 1. When a block reaches the floor or another block, and cannot lower any further, the queue of blocks is updates and the next block is translated to the starting position.
-
